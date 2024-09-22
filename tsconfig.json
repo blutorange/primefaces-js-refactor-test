@@ -1,8 +1,8 @@
 {
-  "include": ["src"],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/core-global" },
-    { "path": "./packages/widgets" }
-  ]
+	"extends": "./tsconfig-base.json",
+	"include": ["src"],
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src"
+	}
 }

@@ -6,4 +6,8 @@ export class DeferredWidget {
     render() {
         return `<div>${this.name}</div>`;
     }
+
+    _render() {
+        return `<div>${this.name}</div>`;
+    }
 }

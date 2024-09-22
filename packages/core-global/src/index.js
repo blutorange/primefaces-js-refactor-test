@@ -1,3 +1,3 @@
 
-import { PrimeFaces } from "../../core/src/index.js";
+import { PrimeFaces } from "primefaces-core";
 window.PrimeFaces = PrimeFaces;

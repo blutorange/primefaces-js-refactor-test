@@ -1,4 +1,4 @@
-import type { PrimeFaces as PF } from "../../core/src/index.js";
+import type { PrimeFaces as PF } from "primefaces-core";
 
 declare global {
     const PrimeFaces: typeof PF;

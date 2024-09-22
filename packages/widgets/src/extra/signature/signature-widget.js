@@ -1,6 +1,4 @@
-import { BaseWidget } from "../../../../core/src/widget/base-widget.js";
-
-export class Signature extends BaseWidget {
+export class Signature extends PrimeFaces.widget.BaseWidget {
   constructor() {
     super();
     this.type = "signature";
