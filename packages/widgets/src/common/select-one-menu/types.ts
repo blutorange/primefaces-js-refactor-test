@@ -1,7 +1,5 @@
-import type { SelectOneMenu } from "./select-one-menu.js";
+import type { BaseWidgetCfg } from "primefaces-core";
 
-declare module "primefaces-core" {
-    interface WidgetRegistry {
-        SelectOneMenu: typeof SelectOneMenu
-    }
+export interface SelectOneMenuCfg extends BaseWidgetCfg {
+    options: string[];
 }

@@ -4,6 +4,6 @@
 	"compilerOptions": {
 		"outDir": "dist",
 		"rootDir": "src",
-		"types": ["primefaces-core-global"]
+		"types": ["primefaces-core"]
 	}
 }

@@ -1,5 +1,18 @@
-export class DeferredWidget {
-    constructor() {
+/** @import {DeferredWidgetCfg} from "./types.js" */
+
+import { BaseWidget } from "./base-widget.js";
+
+/**
+ * The deferred widget.
+ * @template {DeferredWidgetCfg} Cfg
+ * @extends {BaseWidget<Cfg>}
+ */
+export class DeferredWidget extends BaseWidget {
+    /**
+     * @param {Cfg} cfg 
+     */
+    constructor(cfg) {
+        super(cfg);
         this.name = 'DeferredWidget';
     }
     

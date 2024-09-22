@@ -1,7 +1,5 @@
-import type { InputText } from "./input-text.js";
+import type { BaseWidgetCfg } from "primefaces-core";
 
-declare module "primefaces-core" {
-    interface WidgetRegistry {
-        InputText: typeof InputText
-    }
+export interface InputTextCfg extends BaseWidgetCfg {
+    placeholder: string;
 }

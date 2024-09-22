@@ -8,10 +8,6 @@
     },
     "exports": {
       ".": {
-        "import": "./src/index.js",
-        "types": "./dist/index.d.ts"
-      },
-      "./global": {
         "types": "./global.d.ts"
       }
     },

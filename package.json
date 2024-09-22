@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
   },
-  "workspaces": ["packages/core", "packages/core-global", "packages/widgets"],
+  "workspaces": ["packages/core", "packages/widgets"],
   "dependencies": {
     "rollup": "^3.29.5",
     "typescript": "^5.6.2"
