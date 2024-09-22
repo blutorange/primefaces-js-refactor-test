@@ -1,0 +1,14 @@
+{
+	"name": "primefaces-core-global",
+	"type": "module",
+	"version": "1.0.0",
+	"main": "index.js",
+	"exports": [],
+	"scripts": {},
+	"devDependencies": {
+		"typescript": "^5.6.2"
+	},
+	"dependencies": {
+		"primefaces-core": "1.0.0"
+	}
+}
