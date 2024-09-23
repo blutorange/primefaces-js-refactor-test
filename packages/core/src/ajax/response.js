@@ -6,7 +6,7 @@ export class Response {
      * @param {string} xml
      * @param {string} status
      * @param {string} xhr
-     * @param {() => {}} updateHandler
+     * @param {() => void} updateHandler
      * @returns {boolean}
      */
     handle(xml, status, xhr, updateHandler) {

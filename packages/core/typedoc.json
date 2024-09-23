@@ -1,0 +1,12 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["./dist/index.d.ts", "./dist/types.d.ts"],
+    "out": "docs",
+    "tsconfig": "tsconfig-typedoc.json",
+    "cleanOutputDir": true,
+    "basePath": "./",
+    "placeInternalsInOwningModule": true,
+    "plugin": [
+        "typedoc-plugin-missing-exports"
+    ]
+}
