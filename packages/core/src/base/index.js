@@ -1,7 +1,2 @@
-import { abortXHRs } from "./abort-xhrs.js";
-import { getCookie } from "./get-cookie.js";
-
-export const base = {
-    abortXHRs,
-    getCookie,
-};
+export { abortXHRs } from "./abort-xhrs.js";
+export { getCookie } from "./get-cookie.js";

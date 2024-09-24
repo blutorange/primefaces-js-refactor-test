@@ -1,7 +1,7 @@
-import { Request } from "./request.js";
-import { Response } from "./response.js";
+import { Request as AjaxRequest } from "./request.js";
+import { Response as AjaxResponse } from "./response.js";
 
 export const ajax = {
-    Request,
-    Response,
-}
+    Request: new AjaxRequest(),
+    Response: new AjaxResponse(),
+};

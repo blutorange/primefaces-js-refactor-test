@@ -1,4 +1,4 @@
-/** @import {DeferredWidgetCfg} from "./types.js" */
+/** @import {DeferredWidgetCfg} from "./config.js" */
 
 import { BaseWidget } from "./base-widget.js";
 

@@ -5,7 +5,7 @@
     "tsconfig": "tsconfig-typedoc.json",
     "cleanOutputDir": true,
     "basePath": "./",
-    "placeInternalsInOwningModule": true,
+    "placeInternalsInOwningModule": false,
     "plugin": [
         "typedoc-plugin-missing-exports"
     ]

@@ -1,4 +1,4 @@
-/** @import { BaseWidgetCfg } from "./types.js" */
+/** @import { BaseWidgetCfg } from "./config.js" */
 
 /**
  * The base widget.
