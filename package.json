@@ -1,12 +1,14 @@
 {
-  "name": "primefaces",
-  "type": "module",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
+	"name": "primefaces",
+	"type": "module",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+    "typedoc": "typedoc --options typedoc.json"
   },
-  "workspaces": ["packages/core", "packages/widgets"],
-  "dependencies": {
-    "typescript": "^5.6.2"
-  }
+	"workspaces": ["packages/core", "packages/widgets"],
+	"dependencies": {
+		"typedoc": "^0.26.7",
+		"typescript": "^5.6.2"
+	}
 }

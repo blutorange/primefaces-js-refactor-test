@@ -1,4 +1,4 @@
-/** @import { SignatureCfg } from "./types.js" */
+/** @import { SignatureCfg } from "./signature-types.js" */
 
 /**
  * @template {SignatureCfg} Cfg

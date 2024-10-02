@@ -1,8 +1,8 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "entryPoints": ["./src/index.js", "./src/types.d.ts"],
+    "entryPoints": ["./packages/core", "./packages/widgets"],
+    "entryPointStrategy": "packages",
     "out": "docs",
-    "tsconfig": "tsconfig.json",
     "cleanOutputDir": true,
     "basePath": "./"
 }

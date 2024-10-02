@@ -1,4 +1,4 @@
-/** @import { InputTextCfg } from "./types.js" */
+/** @import { InputTextCfg } from "./input-text-types.js" */
 
 /**
  * The select one menu widget.

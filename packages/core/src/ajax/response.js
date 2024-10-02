@@ -1,4 +1,10 @@
+/**
+ * The handler for AJAX responses.
+ */
 export class Response {
+    /**
+     * Creates a new response singleton.
+     */
     constructor() {
         this.url = "";
     }

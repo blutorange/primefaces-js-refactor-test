@@ -1,5 +1,12 @@
+/**
+ * The handler for AJAX requests.
+ */
 export class Request {
+    /**
+     * Creates a new request singleton.
+     */
     constructor() {
+        /** The base URL */
         this.url = "";
     }
     /**

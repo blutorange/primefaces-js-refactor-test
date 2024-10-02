@@ -1,4 +1,4 @@
-/** @import { SelectOneMenuCfg } from "./types.js" */
+/** @import { SelectOneMenuCfg } from "./select-one-menu-types.js" */
 
 /**
  * The select one menu widget.
