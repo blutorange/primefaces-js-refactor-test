@@ -1,7 +1,7 @@
 /** @import { SignatureCfg } from "./signature-types.js" */
 
 /**
- * @template {SignatureCfg} Cfg
+ * @template {SignatureCfg} [Cfg=SignatureCfg]
  * @extends {PrimeFaces.widget.BaseWidget<Cfg>}
  */
 export class Signature extends PrimeFaces.widget.BaseWidget {

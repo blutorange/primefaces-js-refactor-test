@@ -2,7 +2,7 @@
 
 /**
  * The base widget.
- * @template {BaseWidgetCfg} Cfg
+ * @template {BaseWidgetCfg} [Cfg=BaseWidgetCfg]
  */
 export class BaseWidget {
     /**

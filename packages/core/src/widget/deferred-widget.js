@@ -4,7 +4,7 @@ import { BaseWidget } from "./base-widget.js";
 
 /**
  * The deferred widget.
- * @template {DeferredWidgetCfg} Cfg
+ * @template {DeferredWidgetCfg} [Cfg=DeferredWidgetCfg]
  * @extends {BaseWidget<Cfg>}
  */
 export class DeferredWidget extends BaseWidget {

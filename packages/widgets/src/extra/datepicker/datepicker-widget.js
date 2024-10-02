@@ -1,7 +1,7 @@
 /** @import { DatePickerCfg } from "./datepicker-types.js" */
 
 /**
- * @template {DatePickerCfg} Cfg
+ * @template {DatePickerCfg} [Cfg=DatePickerCfg]
  * @extends {PrimeFaces.widget.DeferredWidget<Cfg>}
  */
 export class DatePicker extends PrimeFaces.widget.DeferredWidget {

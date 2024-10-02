@@ -2,7 +2,7 @@
 
 /**
  * The select one menu widget.
- * @template {InputTextCfg} Cfg
+ * @template {InputTextCfg} [Cfg=InputTextCfg]
  * @extends {PrimeFaces.widget.BaseWidget<Cfg>}
  */
 export class InputText extends PrimeFaces.widget.BaseWidget {

@@ -4,6 +4,9 @@
 	"version": "1.0.0",
 	"main": "./src/index.js",
 	"types": "./dist/index.d.ts",
+	"files": [
+		"dist", "global.d.ts"
+	],
 	"scripts": {
 		"typescript": "node build/generate-types.js",
 		"typedoc": "typedoc --options typedoc.json"

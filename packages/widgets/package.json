@@ -8,6 +8,9 @@
 			"types": "./dist/augment.d.ts"
 		}
 	},
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"typescript": "node build/generate-types.js",
 		"typedoc": "typedoc --options typedoc.json"

@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+echo "Compiling widgets..."
+
+echo "Processing common..."
 java -jar ~/Downloads/closure-compiler-v20240317.jar \
   --formatting=PRETTY_PRINT \
   --compilation_level=SIMPLE \
@@ -13,15 +16,18 @@ java -jar ~/Downloads/closure-compiler-v20240317.jar \
   --js_output_file dist/components.js
 
 for dir in src/extra/* ; do
-  java -jar ~/Downloads/closure-compiler-v20240317.jar \
-    --formatting=PRETTY_PRINT \
-    --compilation_level=SIMPLE \
-    --language_in=ECMASCRIPT_2020 \
-    --language_out=ECMASCRIPT_2016 \
-    --js="$dir/**/*.js" \
-    --js="$dir/*.js" \
-    --output_wrapper='(function(){%output%})();' \
-    --assume_function_wrapper \
-    --entry_point="$dir/index.js" \
-    --js_output_file "dist/$(basename $dir).js"
+  echo "Processing $dir";
+  if [ -d "$dir" ]; then
+    java -jar ~/Downloads/closure-compiler-v20240317.jar \
+      --formatting=PRETTY_PRINT \
+      --compilation_level=SIMPLE \
+      --language_in=ECMASCRIPT_2020 \
+      --language_out=ECMASCRIPT_2016 \
+      --js="$dir/**/*.js" \
+      --js="$dir/*.js" \
+      --output_wrapper='(function(){%output%})();' \
+      --assume_function_wrapper \
+      --entry_point="$dir/index.js" \
+      --js_output_file "dist/$(basename $dir).js"
+  fi
 done

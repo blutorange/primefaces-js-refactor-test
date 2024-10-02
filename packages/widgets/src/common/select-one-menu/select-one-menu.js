@@ -2,7 +2,7 @@
 
 /**
  * The select one menu widget.
- * @template {SelectOneMenuCfg} Cfg
+ * @template {SelectOneMenuCfg} [Cfg=SelectOneMenuCfg]
  * @extends {PrimeFaces.widget.BaseWidget<Cfg>}
  */
 export class SelectOneMenu extends PrimeFaces.widget.BaseWidget {
