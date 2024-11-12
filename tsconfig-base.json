@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "Preserve",
+		"moduleResolution": "Bundler",
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"resolvePackageJsonExports": true,
+		"noResolve": false,
+
+		"types": [],
+
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true,
+
+		"strict": true,
+		"strictBindCallApply": true,
+		"strictBuiltinIteratorReturn": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictPropertyInitialization": true,
+
+		"noImplicitOverride": true,
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true
+	}
+}

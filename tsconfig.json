@@ -1,0 +1,9 @@
+{
+    "buildOptions": {
+    },
+    "compilerOptions": {
+        "strict": true
+    },
+    "references": [
+    ]
+}
