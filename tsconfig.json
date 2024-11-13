@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["esnext"],
-    "esModuleInterop": true
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
+    "noEmit": true,
+    "outDir": "dist"
   },
   "include": ["src"]
 }
