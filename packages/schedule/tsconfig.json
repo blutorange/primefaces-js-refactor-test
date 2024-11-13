@@ -6,5 +6,8 @@
 		"rootDir": ".",
 	},
     "include": ["src", "lib", "index.ts"],
-	"references": [{ "path": "../core" }]
+	"references": [
+		{ "path": "../types" },
+		{ "path": "../core" }
+	]
 }

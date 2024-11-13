@@ -2,13 +2,20 @@
   "name": "@primefaces/primefaces",
   "packageManager": "yarn@4.5.1",
   "devDependencies": {
-    "@types/jquery": "^3",
-    "@types/node": "^22.9.0",
+    "@types/jquery": "3.5.32",
+    "@types/node": "22.9.0",
     "esbuild": "0.24.0",
-    "typescript": "^5.6.3"
+    "typedoc": "0.26.11",
+    "typedoc-plugin-dt-links": "1.0.2",
+    "typedoc-plugin-mdn-links": "3.3.7",
+    "typedoc-plugin-merge-modules": "6.0.3",
+    "typedoc-plugin-missing-exports": "3.0.0",
+    "typescript": "5.6.3"
   },
   "scripts": {
-    "build": "node build/bin/build.mjs"
+    "build": "node build/bin/build.mjs",
+    "types": "node build/bin/types.mjs",
+    "typedoc": "node build/bin/typedoc.mjs"
   },
   "dependencies": {
     "@fullcalendar/common": "~5.11.3",

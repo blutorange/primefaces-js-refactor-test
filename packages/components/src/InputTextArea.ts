@@ -11,7 +11,8 @@ namespace PrimeFaces.widget {
             this.input = "textarea";
         }
 
-        resize() {
+        resize(): HTMLElement | undefined {
+            return document.getElementById(this.input) ?? undefined;
         }
 
         override render(): void {

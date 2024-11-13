@@ -6,5 +6,8 @@
 		"rootDir": ".",
 	},
 	"include": ["src", "index.ts"],
-	"references": [{ "path": "../jquery" }]
+	"references": [
+		{ "path": "../types" },
+		{ "path": "../jquery" }
+	]
 }

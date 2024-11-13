@@ -5,6 +5,7 @@ namespace PrimeFaces.widget {
 
     export class Schedule extends DeferredWidget {
         readonly scheduleId: string;
+        calendar: import("@fullcalendar/core").Calendar | undefined;
 
         constructor(cfg: ScheduleCfg) {
             super(cfg);
@@ -12,7 +13,11 @@ namespace PrimeFaces.widget {
         }
 
         _render(): void {
-            new FullCalendar.Calendar(document.getElementById(this.scheduleId)!, {});
+            this.calendar = new FullCalendar.Calendar(document.getElementById(this.scheduleId)!, {});
+        }
+
+        getCalendar(): import("@fullcalendar/core").Calendar | undefined {
+            return this.calendar;
         }
     }
 }

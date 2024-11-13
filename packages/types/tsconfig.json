@@ -3,11 +3,7 @@
 	"compilerOptions": {
 		"composite": true,
 		"outFile": "dist/index.js",
-		"rootDir": "."
+		"rootDir": ".",
 	},
-	"include": ["src", "index.ts"],
-	"references": [
-		{ "path": "../types" },
-		{ "path": "../core" }
-	]
+    "include": ["src", "index.ts"],
 }
