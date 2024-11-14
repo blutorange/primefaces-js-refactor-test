@@ -1,14 +1,21 @@
 // package: core.js
-/// <reference path="./src/BaseWidget.ts" />
-/// <reference path="./src/DeferredWidget.ts"  />
 
-namespace PrimeFaces {
-    export interface WindowExtensions {
-        /**
-         * Exposes the main PrimeFaces namespace that contains all features.
-         * to the global window scope.
-         * See {@link PrimeFaces}.
-         */
-        PrimeFaces: typeof PrimeFaces;
+import { BaseWidget as _BaseWidget, BaseWidgetCfg as _BaseWidgetCfg } from "./src/BaseWidget";
+import { DeferredWidget as _DeferredWidget, DeferredWidgetCfg as _DeferredWidgetCfg } from "./src/DeferredWidget";
+
+declare global {
+    namespace PrimeType.widget {
+        export type BaseWidgetCfg = _BaseWidgetCfg;
+        export type DeferredWidgetCfg = _DeferredWidgetCfg;
+        export interface WidgetRegistry {
+            BaseWidget: typeof _BaseWidget;
+            DeferredWidget: typeof _DeferredWidget;
+        }
     }
 }
+
+// @ts-expect-error
+(window.PrimeFaces ??= {}).widget ??= {};
+PrimeFaces.widget.BaseWidget ??= _BaseWidget;
+PrimeFaces.widget.DeferredWidget ??= _DeferredWidget;
+

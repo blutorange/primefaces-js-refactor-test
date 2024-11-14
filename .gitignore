@@ -6,6 +6,8 @@
 !.yarn/sdks
 !.yarn/versions
 
+*.tgz
+
 .vscode
 
 **/dist

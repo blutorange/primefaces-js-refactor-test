@@ -1,2 +1,6 @@
 // package: jquery.js
-/// <reference path="./lib/jquery.ts" />
+
+/// <reference types="jquery" preserve="true" />
+
+import $ from "jquery";
+Object.assign(window, { $ });

@@ -1,15 +1,19 @@
-namespace PrimeFaces.widget {
-    export interface DeferredWidgetCfg extends BaseWidgetCfg {
-        id: string;
+import { BaseWidget, type BaseWidgetCfg } from "./BaseWidget";
+
+export interface DeferredWidgetCfg extends BaseWidgetCfg {
+    id: string;
+}
+
+export abstract class DeferredWidget extends BaseWidget {
+    rendered: boolean;
+    constructor(cfg: BaseWidgetCfg, runInit = true) {
+        super(cfg, runInit);
+        this.rendered = false;
     }
 
-    export abstract class DeferredWidget extends BaseWidget {
-        rendered: boolean;
-        constructor(cfg: BaseWidgetCfg) {
-            super(cfg);
-            this.rendered = false;
-        }
-
-        abstract _render(): void;
+    override  render(): void {
+        // something
     }
+
+    protected abstract _render(): void;
 }

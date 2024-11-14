@@ -6,7 +6,8 @@
 		"rootDir": ".",
 		"allowJs": true,
 		"checkJs": true,
+		"isolatedDeclarations": false,
 		"types": ["node"]
 	},
-	"include": ["bin", "esbuild-plugin"]
+	"include": ["bin", "common", "esbuild-plugin"]
 }

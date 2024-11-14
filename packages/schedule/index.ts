@@ -1,14 +1,27 @@
 // package: schedule.js
-/// <reference path="./lib/fullcalendar.ts" />
-/// <reference path="./src/Schedule.ts" />
 
-namespace PrimeFaces {
-    export interface WindowExtensions {
-        /**
-         * Exposes the [FullCalendar](https://fullcalendar.io/) library
-         * to the global window scope.
-         * See {@link FullCalendar}.
-         */
-        FullCalendar: typeof FullCalendar;
+import { FullCalendarGlobal } from "./lib/fullcalendar";
+import { Schedule as _Schedule, ScheduleCfg as _ScheduleCfg } from "./src/Schedule";
+
+declare global {
+    let FullCalendar: FullCalendarGlobal;
+
+    namespace PrimeType {
+        export interface WindowExtensions {
+            FullCalendar: typeof FullCalendar;
+        }
+    }
+
+    namespace PrimeType.widget {
+        export type ScheduleCfg = _ScheduleCfg;
+        export interface WidgetRegistry {
+            Schedule: typeof _Schedule;
+        }
     }
 }
+
+window.FullCalendar ??= FullCalendarGlobal;
+
+// @ts-expect-error
+(window.PrimeFaces ??= {}).widget ??= {};
+PrimeFaces.widget.Schedule ??= _Schedule;

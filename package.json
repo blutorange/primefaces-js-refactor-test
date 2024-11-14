@@ -1,22 +1,25 @@
 {
   "name": "@primefaces/primefaces",
   "packageManager": "yarn@4.5.1",
-  "devDependencies": {
-    "@types/jquery": "3.5.32",
-    "@types/node": "22.9.0",
-    "esbuild": "0.24.0",
-    "typedoc": "0.26.11",
-    "typedoc-plugin-dt-links": "1.0.2",
-    "typedoc-plugin-mdn-links": "3.3.7",
-    "typedoc-plugin-merge-modules": "6.0.3",
-    "typedoc-plugin-missing-exports": "3.0.0",
-    "typescript": "5.6.3"
-  },
+  "version": "15.0.0-SNAPSHOT",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "node build/bin/build.mjs",
-    "types": "node build/bin/types.mjs",
-    "typedoc": "node build/bin/typedoc.mjs"
+    "build": "yarn build:bundle & yarn build:types & yarn build:docs",
+    "build:bundle": "node build/bin/bundle.mjs",
+    "build:types": "node build/bin/types.mjs",
+    "build:docs": "node build/bin/docs.mjs"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/index.d.ts"
+  ],
   "dependencies": {
     "@fullcalendar/common": "~5.11.3",
     "@fullcalendar/core": "~5.11.3",
@@ -26,8 +29,19 @@
     "@fullcalendar/moment": "~5.11.3",
     "@fullcalendar/moment-timezone": "~5.11.3",
     "@fullcalendar/timegrid": "~5.11.3",
+    "@types/jquery": "3.5.32",
     "jquery": "4.0.0-beta.2",
     "moment": "2.30.1",
     "moment-timezone": "0.5.46"
+  },
+  "devDependencies": {
+    "@types/node": "22.9.0",
+    "esbuild": "0.24.0",
+    "typedoc": "0.26.11",
+    "typedoc-plugin-dt-links": "1.0.2",
+    "typedoc-plugin-mdn-links": "3.3.7",
+    "typedoc-plugin-merge-modules": "6.0.3",
+    "typedoc-plugin-missing-exports": "3.0.0",
+    "typescript": "5.6.3"
   }
 }

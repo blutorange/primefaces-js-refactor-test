@@ -1,15 +1,17 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"module": "Preserve",
+		"module": "ESNext",
 		"moduleResolution": "Bundler",
 		"declaration": true,
 		"emitDeclarationOnly": true,
 		"resolvePackageJsonExports": true,
 		"noResolve": false,
 		"esModuleInterop": true,
-
+		"rootDir": "packages",
+		
 		"types": [],
+		"isolatedDeclarations": true,
 
 		"skipDefaultLibCheck": true,
 		"skipLibCheck": true,

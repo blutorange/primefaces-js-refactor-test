@@ -14,7 +14,7 @@ import listPlugin from "@fullcalendar/list";
 import momentPlugin from "@fullcalendar/moment";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 
-type FullCalendarGlobal =
+export type FullCalendarGlobal =
     & typeof import("@fullcalendar/core")
     & typeof import("@fullcalendar/interaction")
     & typeof import("@fullcalendar/daygrid")
@@ -32,7 +32,7 @@ type FullCalendarGlobal =
         globalLocales: typeof import("@fullcalendar/core/locales-all")["default"];
     };
 
-const FullCalendarImpl: FullCalendarGlobal = {
+export const FullCalendarGlobal: FullCalendarGlobal = {
     ...FullCalendarCore,
     ...FullCalendarInteraction,
     ...FullCalendarDayGrid,
@@ -48,9 +48,3 @@ const FullCalendarImpl: FullCalendarGlobal = {
     momentTimezonePlugin,
     globalLocales: FullCalendarCoreLocalesAll
 };
-
-declare global {
-    const FullCalendar: FullCalendarGlobal;
-}
-
-Object.assign(window, { FullCalendar: FullCalendarImpl });

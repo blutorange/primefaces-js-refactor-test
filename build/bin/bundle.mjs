@@ -4,18 +4,8 @@ import fs from "node:fs/promises";
 
 import * as esbuild from "esbuild";
 
-import { referencePragmaLoaderPlugin } from "../esbuild-plugin/load-triple-slash-references-plugin.mjs";
-
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const baseDir = path.resolve(currentDir, "..", "..");
-
-/**
- * @param {string} string 
- * @returns {string}
- */
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 /** @type {import("esbuild").BuildOptions["entryPoints"]} */
 const entryPoints = [
@@ -37,12 +27,6 @@ async function main() {
         logLevel: "info",
         write: true,
         plugins: [
-            referencePragmaLoaderPlugin({
-                // Limit to files in our project, i.e. exclude external dependencies
-                fileFilter: new RegExp(`^${escapeRegExp(baseDir)}${path.sep}.+\\.[mc]?ts$`),
-                // Do not include /// <reference ... preserve="true" />
-                pragmaFilter: pragma => pragma.args.preserve !== "true",
-            }),
         ],
     });
 
