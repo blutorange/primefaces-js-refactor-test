@@ -14,9 +14,9 @@ declare global {
         widget: PrimeType.widget.WidgetRegistry;
     }
     
-    let PrimeFaces: PrimeFaces;
-
     interface Window extends PrimeType.WindowExtensions { }
+ 
+    let PrimeFaces: PrimeFaces;
 }
 
 export { };
