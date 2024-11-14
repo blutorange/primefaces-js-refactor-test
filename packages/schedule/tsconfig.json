@@ -6,7 +6,7 @@
 		"outDir": "dist",
 		"types": ["../types/dist", "../core/dist"]
 	},
-    "include": ["src", "lib", "index.ts"],
+    "include": ["src", "index.ts"],
 	"references": [
 		{ "path": "../types" },
 		{ "path": "../core" }

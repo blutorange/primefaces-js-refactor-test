@@ -5,5 +5,5 @@
 		"rootDir": ".",
 		"outDir": "dist"
 	},
-    "include": ["src", "lib", "index.ts"]
+    "include": ["src", "index.ts"]
 }

@@ -1,6 +1,6 @@
 // package: schedule.js
 
-import { FullCalendarGlobal } from "./lib/fullcalendar.js";
+import { FullCalendarGlobal } from "./src/FullCalendar.js";
 import { Schedule as _Schedule, type ScheduleCfg as _ScheduleCfg } from "./src/Schedule.js";
 
 declare global {

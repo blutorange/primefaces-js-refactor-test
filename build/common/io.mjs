@@ -76,12 +76,19 @@ export async function ensureDirectoryExists(fileOrFolder) {
  * Deletes the file or directory if it exists. Does nothing
  * if it doesn't exist.
  * @param {string} fileOrFolder Path to the file or directory.
+ * @param {boolean} [log] Whether to log the deletion.
  */
-export async function deleteIfExists(fileOrFolder) {
+export async function deleteIfExists(fileOrFolder, log = false) {
     const stats = await fileStats(fileOrFolder);
     if (stats?.isDirectory()) {
+        if (log) {
+            console.log(`Deleting directory: ${fileOrFolder}`);
+        }
         await fs.rm(fileOrFolder, { recursive: true });
     } else if (stats?.isFile()) {
+        if (log) {
+            console.log(`Deleting file: ${fileOrFolder}`);
+        }
         await fs.unlink(fileOrFolder);
     }
 }
