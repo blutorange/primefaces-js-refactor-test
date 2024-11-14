@@ -10,7 +10,7 @@ declare global {
         }
     }
 
-    export interface PrimeFaces {
+    interface PrimeFaces {
         widget: PrimeType.widget.WidgetRegistry;
     }
     

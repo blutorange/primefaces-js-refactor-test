@@ -1,5 +1,6 @@
 /** @import { System } from "typescript" */
 /** @import { TsConfigJson } from "type-fest" */
+
 /** @import { FrontendProject } from "../common/find-package-paths.mjs"; */
 /** @import { StringReplacement } from "../common/string-replace.mjs" */
 
@@ -164,13 +165,15 @@ async function runTypeScriptOnFrontendProjects(frontendProjects, tsConfigJsonMod
  * @param {FrontendProject[]} frontendProjects  Frontend projects to process.
  */
 async function createBundledDeclarationFiles(frontendProjects) {
+    // We want to set outFile to "index.d.ts" for all projects, so that
+    // TypeScript produces a bundled type declaration file for each project.
+    //
+    // We can't set that directly in our tsconfig.json files, because that
+    // precludes using other checks such a as `isolatedModules`
+    // or `verbatimModuleSyntax`. These checks are useful for various
+    // reasons, including performance and correctness when bundling
+    // TypeScript code with ESBuild.
     await runTypeScriptOnFrontendProjects(frontendProjects, (project, tsConfigJson) => {
-        // We want to set outFile to "index.d.ts" for all projects, so that
-        // TypeScript produces a bundled type declaration file for each project.
-        // We can't set that directly in our tsconfig.json files, because that
-        // precludes using other checks such a as `isolatedModules`
-        // or `verbatimModuleSyntax`.
-        //
         // Set "outFile" to "index.d.ts" and disable options not compatible with "outFile"
         tsConfigJson.compilerOptions ??= {};
         delete tsConfigJson.compilerOptions.outDir;
@@ -211,8 +214,8 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
         try {
             for (const inPath of inPaths) {
                 const content = await fs.readFile(inPath, "utf-8");
-                extractAndRemoveTopCommentPragmas(content, pragmas);
-                await tempOutFile.appendFile(content, { encoding: "utf-8" });
+                const adjusted = extractAndRemoveTopCommentPragmas(content, pragmas);
+                await tempOutFile.appendFile(adjusted, { encoding: "utf-8" });
             }
         } finally {
             await tempOutFile.close();
@@ -239,16 +242,18 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
     console.log(`Wrote merged type declaration file to <${outPath}>`);
 }
 
+/**
+ * Runs TypeScript on all frontend projects. First, checks that
+ * all projects compile successfully and that TypeScript produces
+ * no errors and warning. Then, creates a bundled `dist/index.d.ts`
+ * declarations file with the contents of all individual frontend
+ * projects.
+ */
 async function main() {
     const t1 = Date.now();
 
     const frontendProjects = await findFrontendProjects();
     console.log(`Running TypeScript on ${frontendProjects.length} projects...`);
-    if (IsProduction) {
-        for (const project of frontendProjects) {
-            await deleteIfExists(project.dist);
-        }
-    }
 
     const t2 = Date.now();
     await runTypeScriptOnFrontendProjects(frontendProjects);
@@ -266,7 +271,7 @@ async function main() {
     console.log(`Merged type declarations in ${t5 - t4} ms`);
 }
 
-main().catch(err => {
-    console.error(err);
+main().catch(e => {
+    console.error(e instanceof Error ? e.stack : e);
     process.exit(1);
 });

@@ -7,6 +7,7 @@
 !.yarn/versions
 
 *.tgz
+node_modules
 
 .vscode
 

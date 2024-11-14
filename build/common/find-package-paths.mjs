@@ -7,6 +7,7 @@ import { PackagesDir } from "./environment.mjs";
 /**
  * @typedef {{
  * readonly dist: string;
+ * readonly docs: string;
  * readonly index: string;
  * readonly name: string;
  * readonly root: string;
@@ -22,6 +23,7 @@ undefined;
 async function createFrontendProject(root) {
     const name = path.relative(PackagesDir, root);
     const dist = path.resolve(root, "dist");
+    const docs = path.resolve(root, "docs");
     const indexJs = path.resolve(root, "index.js");
     const indexTs = path.resolve(root, "index.ts");
     const bundleJs = path.resolve(root, "bundle.js");
@@ -29,13 +31,13 @@ async function createFrontendProject(root) {
     const tsConfig = path.resolve(root, "tsconfig.json");
     const index = await existsAndIsFile(indexTs) ? indexTs : indexJs;
     await Promise.all([
+        ensureDirectoryExists(root),
         assertExistsAndIsFile(index),
         assertExistsAndIsFile(tsConfig),
-        ensureDirectoryExists(dist),
         assertDoesNotExist(bundleJs, "bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts"),
         assertDoesNotExist(bundleTs, "bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts"),
     ]);
-    return { dist, index, name, root, tsConfig };
+    return { dist, docs, index, name, root, tsConfig };
 }
 
 /**

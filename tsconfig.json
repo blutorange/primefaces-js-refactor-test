@@ -3,6 +3,7 @@
     "include": [],
     "files": [],
     "compilerOptions": {
-        "noEmit": true
+        "noEmit": true,
+        "noCheck": true
     },
 }

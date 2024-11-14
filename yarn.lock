@@ -278,12 +278,12 @@ __metadata:
     jquery: "npm:4.0.0-beta.2"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.46"
-    type-fest: "npm:^4.26.1"
+    type-fest: "npm:4.26.1"
     typedoc: "npm:0.26.11"
     typedoc-plugin-dt-links: "npm:1.0.2"
     typedoc-plugin-mdn-links: "npm:3.3.7"
     typedoc-plugin-merge-modules: "npm:6.0.3"
-    typedoc-plugin-missing-exports: "npm:3.0.0"
+    typedoc-plugin-missing-exports: "npm:^3.0.0"
     typescript: "npm:5.6.3"
   languageName: unknown
   linkType: soft
@@ -911,7 +911,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^4.26.1":
+"type-fest@npm:4.26.1":
   version: 4.26.1
   resolution: "type-fest@npm:4.26.1"
   checksum: 10c0/d2719ff8d380befe8a3c61068f37f28d6fa2849fd140c5d2f0f143099e371da6856aad7c97e56b83329d45bfe504afe9fd936a7cff600cc0d46aa9ffb008d6c6
@@ -945,7 +945,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc-plugin-missing-exports@npm:3.0.0":
+"typedoc-plugin-missing-exports@npm:^3.0.0":
   version: 3.0.0
   resolution: "typedoc-plugin-missing-exports@npm:3.0.0"
   peerDependencies:

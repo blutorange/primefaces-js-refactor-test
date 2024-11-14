@@ -2,6 +2,9 @@ export interface BaseWidgetCfg {
     id: string;
 }
 
+/**
+ * The base class for all PrimeFaces widgets.
+ */
 export class BaseWidget {
     readonly cfg: BaseWidgetCfg;
     jq: JQuery;

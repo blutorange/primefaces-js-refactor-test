@@ -43,11 +43,12 @@ export async function existsAndIsDirectory(fileOrFolder) {
 
 /**
  * Asserts that the given path is a file and exists.
- * @param {string} fileOrFolder 
+ * @param {string} fileOrFolder Path to the file or directory.
+ * @param {string} [reason] Optional reason for the assertion.
  */
-export async function assertExistsAndIsFile(fileOrFolder) {
+export async function assertExistsAndIsFile(fileOrFolder, reason) {
     if (!await existsAndIsFile(fileOrFolder)) {
-        throw new Error(`File does not exist: ${fileOrFolder}`);
+        throw new Error(`File does not exist: ${fileOrFolder}${reason ?` - ${reason}` : ""}`);
     }
 }
 

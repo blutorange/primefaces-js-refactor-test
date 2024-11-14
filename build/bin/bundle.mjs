@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 
 import * as esbuild from "esbuild";
 import { DistDir, IsProduction, RootDir } from "../common/environment.mjs";
-import { deleteIfExists, ensureDirectoryExists } from "../common/io.mjs";
+import { ensureDirectoryExists } from "../common/io.mjs";
 import { findFrontendProjects } from "../common/find-package-paths.mjs";
 
 /**
@@ -11,13 +11,19 @@ import { findFrontendProjects } from "../common/find-package-paths.mjs";
  */
 async function createEntryPoints() {
     const frontendProjects = await findFrontendProjects();
-    return frontendProjects.map(project => ({ in: project.index, out: project.name }));
+    return frontendProjects
+        .filter(project => project.name !== "types")
+        .map(project => ({ in: project.index, out: project.name }));
 }
 
+/**
+ * Build script that invokes ESBuild on each individual frontend project.
+ * 
+ * Also writes a `dist/meta.json` file that contains the meta file output 
+ * from ESBuild. You can use e.g. https://esbuild.github.io/analyze/
+ * to visualize the bundle and its contents.
+ */
 async function main() {
-    if (IsProduction) {
-        deleteIfExists(DistDir);
-    }
     ensureDirectoryExists(DistDir);
 
     const entryPoints = await createEntryPoints();
@@ -39,7 +45,7 @@ async function main() {
     console.log(`Wrote meta file to ${metaFilePath}`);
 }
 
-main().catch((err) => {
-    console.error(err);
+main().catch(e => {
+    console.error(e instanceof Error ? e.stack : e);
     process.exit(1);
 });
