@@ -1,4 +1,4 @@
-import { BaseWidget, type BaseWidgetCfg } from "./BaseWidget";
+import { BaseWidget, type BaseWidgetCfg } from "./BaseWidget.js";
 
 export interface DeferredWidgetCfg extends BaseWidgetCfg {
     id: string;

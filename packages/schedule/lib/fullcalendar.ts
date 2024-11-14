@@ -5,7 +5,7 @@ import * as FullCalendarTimeGrid from "@fullcalendar/timegrid";
 import * as FullCalendarList from "@fullcalendar/list";
 import * as FullCalendarMoment from "@fullcalendar/moment";
 import * as FullCalendarMomentTimeZone from "@fullcalendar/moment-timezone";
-import FullCalendarCoreLocalesAll from "@fullcalendar/core/locales-all"
+import FullCalendarCoreLocalesAll from "@fullcalendar/core/locales-all.js"
 
 import interactionPlugin from "@fullcalendar/interaction";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -29,7 +29,7 @@ export type FullCalendarGlobal =
         listPlugin: typeof import("@fullcalendar/list")["default"];
         momentPlugin: typeof import("@fullcalendar/moment")["default"];
         momentTimezonePlugin: typeof import("@fullcalendar/moment-timezone")["default"];
-        globalLocales: typeof import("@fullcalendar/core/locales-all")["default"];
+        globalLocales: typeof import("@fullcalendar/core/locales-all.js")["default"];
     };
 
 export const FullCalendarGlobal: FullCalendarGlobal = {
@@ -40,11 +40,12 @@ export const FullCalendarGlobal: FullCalendarGlobal = {
     ...FullCalendarList,
     ...FullCalendarMoment,
     ...FullCalendarMomentTimeZone,
-    interactionPlugin,
-    dayGridPlugin,
-    timeGridPlugin,
-    listPlugin,
-    momentPlugin,
-    momentTimezonePlugin,
-    globalLocales: FullCalendarCoreLocalesAll
+    ...interactionPlugin,
+    interactionPlugin: interactionPlugin.default,
+    dayGridPlugin: dayGridPlugin.default,
+    timeGridPlugin: timeGridPlugin.default,
+    listPlugin: listPlugin.default,
+    momentPlugin: momentPlugin.default,
+    momentTimezonePlugin: momentTimezonePlugin.default,
+    globalLocales: FullCalendarCoreLocalesAll.default
 };

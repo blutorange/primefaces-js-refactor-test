@@ -1,3 +1,5 @@
+/** @import { System } from "typescript" */
+/** @import { TsConfigJson } from "type-fest" */
 /** @import { FrontendProject } from "../common/find-package-paths.mjs"; */
 /** @import { StringReplacement } from "../common/string-replace.mjs" */
 
@@ -7,14 +9,80 @@ import { pipeline } from "node:stream/promises";
 
 import {
     createSolutionBuilder,
-    createSolutionBuilderHost
+    createSolutionBuilderHost,
+    parseConfigFileTextToJson,
+    sys,
 } from "typescript";
 
 import { findFrontendProjects } from "../common/find-package-paths.mjs";
-import { DistDir, IsProduction } from "../common/environment.mjs";
+import { DistDir, IsProduction, PackagesDir } from "../common/environment.mjs";
 import { deleteIfExists, ensureDirectoryExists } from "../common/io.mjs";
 import { getAllCommentPragmas } from "../common/comment-pragma.mjs";
 import { applyStringReplacements } from "../common/string-replace.mjs";
+
+/**
+ * @template K
+ * @template V
+ * @typedef {{
+ * get(key: K): V | undefined;
+ * has(key: K): boolean;
+ * }} ReadonlyMapLike
+ */
+undefined;
+
+/**
+ * @typedef {(project: FrontendProject, tsConfigJson: TsConfigJson) => void} FrontendProjectTsConfigJsonModifier
+ */
+undefined;
+
+/**
+ * Reads a TypeScript configuration file and returns the parsed JSON.
+ * Note that TypeScript uses an extended JSON format with comments,
+ * so we can't just use `JSON.parse`.
+ * @param {string} tsConfigPath Path to the tsconfig file.
+ * @returns {Promise<TsConfigJson>} The parsed tsconfig.
+ */
+async function readTsConfigJson(tsConfigPath) {
+    const jsonText = await fs.readFile(tsConfigPath, "utf8");
+    const readResult = parseConfigFileTextToJson(tsConfigPath, jsonText);
+    if (readResult.error) {
+        throw new Error(`Failed to parse tsconfig file at <${tsConfigPath}>: ${readResult.error.messageText}`);
+    }
+    return readResult.config;
+}
+
+/**
+ * Creates a TypeScript system that returns the given files when
+ * requested, and delegates all other file operations to the
+ * given system. This allows you to overwrite the contents of
+ * certain files.
+ * @param {System} sys Base TypeScript system to which to delegate,
+ * @param {ReadonlyMapLike<string, Buffer>} fileOverrides Overrides for specific files.
+ * @returns {System} A new TypeScript system.
+ */
+function createSystemWithFileOverrides(sys, fileOverrides) {
+    /** @type {System} */
+    const customSystem = Object.create(sys);
+    customSystem.readFile = (path, encoding) => {
+        const override = fileOverrides.get(path);
+        return override
+            ? override.toString(/** @type {BufferEncoding} */(encoding))
+            : sys.readFile(path, encoding);
+    };
+    customSystem.writeFile = (path, data, writeByteOrderMark) => {
+        if (fileOverrides.has(path)) {
+            throw new Error(`Cannot write to virtual file <${path}>`);
+        }
+        sys.writeFile(path, data, writeByteOrderMark);
+    };
+    if (sys.getFileSize) {
+        customSystem.getFileSize = (path) => {
+            const virtualFile = fileOverrides.get(path);
+            return virtualFile?.length ?? sys.getFileSize?.(path) ?? 0;
+        };
+    }
+    return customSystem;
+}
 
 /**
  * Removes all reference comment pragmas from the given
@@ -44,18 +112,75 @@ function extractAndRemoveTopCommentPragmas(code, pragmas) {
 }
 
 /**
- * Runs TypeScript on the given package paths and returns the exit status.
- * @param {FrontendProject[]} frontendProjects 
- * @returns {Promise<number>}
+ * Reads the TSConfig files of the given frontend projects, applies
+ * the given modification function to each of them, and returns a
+ * a map of the modified TSConfig files. The map key is the path to
+ * the TSConfig file, and the map value is a {@link Buffer} with
+ * the modified TSConfig file contents.
+ * @param {FrontendProject[]} frontendProjects Frontend projects to process.
+ * @param {FrontendProjectTsConfigJsonModifier} modifyTsConfig Function to modify the TSConfig.
+ * @returns {Promise<Map<string, Buffer>>} A map of modified TSConfig files.
  */
-async function runTypeScript(frontendProjects) {
-    const host = createSolutionBuilderHost();
+async function createTsConfigOverrides(frontendProjects, modifyTsConfig) {
+    const entries = frontendProjects.map(async project => {
+        try {
+            const tsConfigJson = await readTsConfigJson(project.tsConfig);
+            modifyTsConfig(project, tsConfigJson);
+            const newTsConfigJson = JSON.stringify(tsConfigJson, null, 2);
+            return /** @type {const} */ ([project.tsConfig, Buffer.from(newTsConfigJson, "utf-8")]);
+        } catch (e) {
+            throw new Error(`Failed to read tsconfig file at <${project.tsConfig}>: ${e}`);
+        }
+    });
+    const overrides = await Promise.all(entries);
+    return new Map(overrides);
+}
+
+/**
+ * @param {FrontendProject[]} frontendProjects 
+ * @param {FrontendProjectTsConfigJsonModifier} [tsConfigJsonModifier]
+ */
+async function runTypeScriptOnFrontendProjects(frontendProjects, tsConfigJsonModifier) {
     const rootNames = frontendProjects.map(project => project.tsConfig);
+    const tsConfigOverrides = await createTsConfigOverrides(frontendProjects, tsConfigJsonModifier ?? (() => { }));
+
+    const system = createSystemWithFileOverrides(sys, tsConfigOverrides);
+    const host = createSolutionBuilderHost(system);
     const builder = createSolutionBuilder(host, rootNames, {
         force: IsProduction,
-        verbose: !IsProduction,
+        verbose: false,
     });
-    return builder.build();
+
+    const exitStatus = builder.build();
+    if (exitStatus !== 0) {
+        throw new Error(`TypeScript failed with exit status ${exitStatus}`);
+    }
+}
+
+/**
+ * Runs TypeScript on the given frontend projects. Creates a
+ * bundle type declaration file at `dist/index.d.ts` for each
+ * project.
+ * @param {FrontendProject[]} frontendProjects  Frontend projects to process.
+ */
+async function createBundledDeclarationFiles(frontendProjects) {
+    await runTypeScriptOnFrontendProjects(frontendProjects, (project, tsConfigJson) => {
+        // We want to set outFile to "index.d.ts" for all projects, so that
+        // TypeScript produces a bundled type declaration file for each project.
+        // We can't set that directly in our tsconfig.json files, because that
+        // precludes using other checks such a as `isolatedModules`
+        // or `verbatimModuleSyntax`.
+        //
+        // Set "outFile" to "index.d.ts" and disable options not compatible with "outFile"
+        tsConfigJson.compilerOptions ??= {};
+        delete tsConfigJson.compilerOptions.outDir;
+        tsConfigJson.compilerOptions.rootDir = path.relative(project.root, PackagesDir);
+        tsConfigJson.compilerOptions.outFile = path.join("dist", "bundle.d.ts");
+        // @ts-expect-error New option introduced by TS 5.6, type-fest does not have it yet 
+        tsConfigJson.compilerOptions.noCheck = true;
+        tsConfigJson.compilerOptions.isolatedModules = false;
+        tsConfigJson.compilerOptions.verbatimModuleSyntax = false;
+    });
 }
 
 /**
@@ -68,7 +193,7 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
     const tempOutPath = path.resolve(DistDir, "index_temp.d.ts");
     try {
         // Collect all type declaration files that need to be merged
-        const inPaths = frontendProjects.map(project => path.resolve(project.dist, "index.d.ts"));
+        const inPaths = frontendProjects.map(project => path.resolve(project.dist, "bundle.d.ts"));
 
         // Delete output files if they exist,and create
         // the output directory if it doesn't exist
@@ -119,25 +244,29 @@ async function main() {
 
     const frontendProjects = await findFrontendProjects();
     console.log(`Running TypeScript on ${frontendProjects.length} projects...`);
+    if (IsProduction) {
+        for (const project of frontendProjects) {
+            await deleteIfExists(project.dist);
+        }
+    }
 
     const t2 = Date.now();
-    const exitStatus = await runTypeScript(frontendProjects);
+    await runTypeScriptOnFrontendProjects(frontendProjects);
 
     const t3 = Date.now();
-    await createMergedTypeDeclarationFile(frontendProjects);
+    await createBundledDeclarationFiles(frontendProjects);
 
     const t4 = Date.now();
-    console.log(`Collected frontend projects in ${t2 - t1} ms`);
-    console.log(`Created type declaration files in ${t3 - t2} ms`);
-    console.log(`Merged type declarations in ${t4 - t3} ms`);
+    await createMergedTypeDeclarationFile(frontendProjects);
 
-    if (exitStatus !== 0) {
-        throw new Error(`TypeScript failed with exit status ${exitStatus}`);
-    }
+    const t5 = Date.now();
+    console.log(`Collected frontend projects in ${t2 - t1} ms`);
+    console.log(`Checked types in ${t3 - t2} ms`);
+    console.log(`Created bundled declaration files in ${t4 - t3} ms`);
+    console.log(`Merged type declarations in ${t5 - t4} ms`);
 }
 
 main().catch(err => {
     console.error(err);
     process.exit(1);
 });
-

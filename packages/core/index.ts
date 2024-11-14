@@ -1,7 +1,7 @@
 // package: core.js
 
-import { BaseWidget as _BaseWidget, BaseWidgetCfg as _BaseWidgetCfg } from "./src/BaseWidget";
-import { DeferredWidget as _DeferredWidget, DeferredWidgetCfg as _DeferredWidgetCfg } from "./src/DeferredWidget";
+import { BaseWidget as _BaseWidget, type BaseWidgetCfg as _BaseWidgetCfg } from "./src/BaseWidget.js";
+import { DeferredWidget as _DeferredWidget, type DeferredWidgetCfg as _DeferredWidgetCfg } from "./src/DeferredWidget.js";
 
 declare global {
     namespace PrimeType.widget {

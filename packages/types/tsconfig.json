@@ -2,7 +2,8 @@
 	"extends": "../../tsconfig-base.json",
 	"compilerOptions": {
 		"composite": true,
-		"outFile": "dist/index.js",
+		"rootDir": ".",
+		"outDir": "dist"
 	},
     "include": ["src", "index.ts"],
 }

@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 
-import { assertExistsAndIsFile, ensureDirectoryExists, existsAndIsFile } from "./io.mjs";
+import { assertDoesNotExist, assertExistsAndIsFile, ensureDirectoryExists, existsAndIsFile } from "./io.mjs";
 import { PackagesDir } from "./environment.mjs";
 
 /**
@@ -20,16 +20,20 @@ undefined;
  * @returns {Promise<FrontendProject>}
  */
 async function createFrontendProject(root) {
-    const name = path.dirname(root);
+    const name = path.relative(PackagesDir, root);
     const dist = path.resolve(root, "dist");
     const indexJs = path.resolve(root, "index.js");
     const indexTs = path.resolve(root, "index.ts");
+    const bundleJs = path.resolve(root, "bundle.js");
+    const bundleTs = path.resolve(root, "bundle.ts");
     const tsConfig = path.resolve(root, "tsconfig.json");
     const index = await existsAndIsFile(indexTs) ? indexTs : indexJs;
     await Promise.all([
         assertExistsAndIsFile(index),
         assertExistsAndIsFile(tsConfig),
         ensureDirectoryExists(dist),
+        assertDoesNotExist(bundleJs, "bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts"),
+        assertDoesNotExist(bundleTs, "bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts"),
     ]);
     return { dist, index, name, root, tsConfig };
 }

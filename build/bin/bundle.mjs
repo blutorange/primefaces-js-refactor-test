@@ -1,37 +1,41 @@
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs/promises";
 
 import * as esbuild from "esbuild";
+import { DistDir, IsProduction, RootDir } from "../common/environment.mjs";
+import { deleteIfExists, ensureDirectoryExists } from "../common/io.mjs";
+import { findFrontendProjects } from "../common/find-package-paths.mjs";
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
-const baseDir = path.resolve(currentDir, "..", "..");
-
-/** @type {import("esbuild").BuildOptions["entryPoints"]} */
-const entryPoints = [
-    { in: "packages/jquery/index.ts", out: "jquery" },
-    { in: "packages/core/index.ts", out: "core" },
-    { in: "packages/components/index.ts", out: "components" },
-    { in: "packages/schedule/index.ts", out: "schedule" },
-];
+/**
+ * @returns {Promise<esbuild.BuildOptions["entryPoints"]>}
+ */
+async function createEntryPoints() {
+    const frontendProjects = await findFrontendProjects();
+    return frontendProjects.map(project => ({ in: project.index, out: project.name }));
+}
 
 async function main() {
-    const result = await esbuild.build({
-        absWorkingDir: baseDir,
+    if (IsProduction) {
+        deleteIfExists(DistDir);
+    }
+    ensureDirectoryExists(DistDir);
+
+    const entryPoints = await createEntryPoints();
+    const buildResult = await esbuild.build({
+        absWorkingDir: RootDir,
         outdir: "dist",
         metafile: true,
         bundle: true,
-        minify: true,
+        minify: IsProduction,
         target: "es6",
         entryPoints,
         logLevel: "info",
         write: true,
-        plugins: [
-        ],
+        plugins: [],
     });
 
-    const metaFilePath = path.resolve(baseDir, "dist", "meta.json");
-    await fs.writeFile(metaFilePath, JSON.stringify(result.metafile, null, 2));
+    const metaFilePath = path.resolve(DistDir, "meta.json");
+    await fs.writeFile(metaFilePath, JSON.stringify(buildResult.metafile, null, 2));
     console.log(`Wrote meta file to ${metaFilePath}`);
 }
 
