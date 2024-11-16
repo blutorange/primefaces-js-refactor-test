@@ -40,13 +40,14 @@ const FullCalendarGlobal: FullCalendarGlobal = {
     ...FullCalendarList,
     ...FullCalendarMoment,
     ...FullCalendarMomentTimeZone,
-    interactionPlugin: interactionPlugin,
-    dayGridPlugin: dayGridPlugin,
-    timeGridPlugin: timeGridPlugin,
-    listPlugin: listPlugin,
-    momentPlugin: momentPlugin,
-    momentTimezonePlugin: momentTimezonePlugin,
-    globalLocales: FullCalendarCoreLocalesAll,
+    ...interactionPlugin,
+    interactionPlugin: interactionPlugin.default,
+    dayGridPlugin: dayGridPlugin.default,
+    timeGridPlugin: timeGridPlugin.default,
+    listPlugin: listPlugin.default,
+    momentPlugin: momentPlugin.default,
+    momentTimezonePlugin: momentTimezonePlugin.default,
+    globalLocales: FullCalendarCoreLocalesAll.default,
 };
 
 declare global {

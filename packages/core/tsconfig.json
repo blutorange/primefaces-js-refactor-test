@@ -2,9 +2,11 @@
 	"extends": "../../tsconfig-base.json",
 	"compilerOptions": {
 		"composite": true,
-		"outFile": "dist/index.js"
+		"rootDir": ".",
+		"outDir": "dist",
+		"types": ["../types/dist", "../jquery/dist"]
 	},
-	"include": ["src"],
+	"include": ["src", "index.ts"],
 	"references": [
 		{ "path": "../types" },
 		{ "path": "../jquery" }

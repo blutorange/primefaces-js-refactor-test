@@ -212,12 +212,14 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
         // Write the type declarations without comment pragmas to the temp file
         const tempOutFile = await fs.open(tempOutPath, "a");
         /** @type {string[]} */
-        const pragmas = [];
+        const commentPragmas = [];
         try {
-            for (const inPath of inPaths) {
+            const modifiedDeclarations = await allSettled(inPaths.map(async inPath => {
                 const content = await fs.readFile(inPath, "utf-8");
-                const adjusted = extractAndRemoveTopCommentPragmas(content, pragmas);
-                await tempOutFile.appendFile(adjusted, { encoding: "utf-8" });
+                return extractAndRemoveTopCommentPragmas(content, commentPragmas);
+            }));
+            for (const modifiedDeclaration of modifiedDeclarations) {
+                await tempOutFile.appendFile(modifiedDeclaration, { encoding: "utf-8" });
             }
         } finally {
             await tempOutFile.close();
@@ -228,7 +230,7 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
         const outFile = await fs.open(outPath, "a");
         try {
             const outWriteStream = outFile.createWriteStream();
-            for (const pragma of pragmas) {
+            for (const pragma of commentPragmas) {
                 await outFile.appendFile(pragma, { encoding: "utf-8" });
                 await outFile.appendFile("\n", { encoding: "utf-8" });
             }
@@ -261,7 +263,7 @@ async function main() {
     await runTypeScriptOnFrontendProjects(frontendProjects);
 
     const t3 = Date.now();
-    // await createBundledDeclarationFiles(frontendProjects);
+    await createBundledDeclarationFiles(frontendProjects);
 
     const t4 = Date.now();
     await createMergedTypeDeclarationFile(frontendProjects);
@@ -269,7 +271,7 @@ async function main() {
     const t5 = Date.now();
     console.log(`Collected frontend projects in ${t2 - t1} ms`);
     console.log(`Checked types in ${t3 - t2} ms`);
-    // console.log(`Created bundled declaration files in ${t4 - t3} ms`);
+    console.log(`Created bundled declaration files in ${t4 - t3} ms`);
     console.log(`Merged type declarations in ${t5 - t4} ms`);
 }
 

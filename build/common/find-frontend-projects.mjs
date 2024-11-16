@@ -14,7 +14,6 @@ import { PackagesDir } from "./environment.mjs";
  * readonly index: string;
  * readonly name: string;
  * readonly root: string;
- * readonly scriptRoot: string;
  * readonly tsConfig: string;
  * }} FrontendProject
  */
@@ -33,27 +32,20 @@ async function createFrontendProject(root) {
     const tsConfig = path.resolve(root, "tsconfig.json");
     const bundleJs = path.resolve(root, "bundle.js");
     const bundleTs = path.resolve(root, "bundle.ts");
-    const indexJs = path.resolve(root, "src", "module", "index.js");
-    const indexTs = path.resolve(root, "src", "module", "index.ts");
-    const scriptRoot = path.resolve(root, "src", "script");
+    const indexJs = path.resolve(root, "index.js");
+    const indexTs = path.resolve(root, "index.ts");
 
     const index = await existsAndIsFile(indexTs) ? indexTs : indexJs;
 
     await Promise.all([
         ensureDirectoryExists(root),
         assertExistsAndIsFile(tsConfig),
-        async () => {
-            const indexExists = await existsAndIsFile(index);
-            const scriptRootExists = await existsAndIsDirectory(scriptRoot);
-            if (!indexExists && !scriptRootExists) {
-                throw new Error(`[root] At least a script root folder named 'script' or a module index file ('index.ts' or 'index.js') must exist.`);
-            }
-        },
+        assertExistsAndIsFile(index),
         assertDoesNotExist(bundleJs, `[${bundleJs}] bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts`),
         assertDoesNotExist(bundleTs, `[${bundleJs}] bundle is an automatic output file containing the bundled declarations from all source file. Creating this file would conflict with dist/bundle.d.ts`),
     ]);
 
-    return { dist, docs, index, name, root, scriptRoot, tsConfig };
+    return { dist, docs, index, name, root, tsConfig };
 }
 
 /**

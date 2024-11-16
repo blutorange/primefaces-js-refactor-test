@@ -1,11 +1,10 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "bundler",
+		"module": "NodeNext",
+		"moduleResolution": "nodenext",
 		"lib": ["dom", "ES2016"],
 		"useDefineForClassFields": false,
-		"rootDir": "packages",
 
 		"types": [],
 		
@@ -17,8 +16,8 @@
 		"noResolve": false,
 		"esModuleInterop": true,
 		"isolatedDeclarations": true,
-		"isolatedModules": false,
-		"verbatimModuleSyntax": false,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
 
 		"skipDefaultLibCheck": true,
 		"skipLibCheck": true,
