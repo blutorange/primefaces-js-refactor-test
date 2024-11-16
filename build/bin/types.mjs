@@ -1,7 +1,7 @@
 /** @import { System } from "typescript" */
 /** @import { TsConfigJson } from "type-fest" */
 
-/** @import { FrontendProject } from "../common/find-package-paths.mjs"; */
+/** @import { FrontendProject } from "../common/find-frontend-projects.mjs"; */
 /** @import { StringReplacement } from "../common/string-replace.mjs" */
 
 import path from "node:path";
@@ -15,11 +15,13 @@ import {
     sys,
 } from "typescript";
 
-import { findFrontendProjects } from "../common/find-package-paths.mjs";
+import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
 import { DistDir, IsProduction, PackagesDir } from "../common/environment.mjs";
-import { deleteIfExists, ensureDirectoryExists } from "../common/io.mjs";
-import { getAllCommentPragmas } from "../common/comment-pragma.mjs";
+import { deleteIfExists, ensureDirectoryExists } from "../common/file.mjs";
+import { getAllCommentPragmasFromText } from "../common/comment-pragma.mjs";
 import { applyStringReplacements } from "../common/string-replace.mjs";
+import { allSettled } from "../common/promise.mjs";
+import { logError } from "../common/error.mjs";
 
 /**
  * @template K
@@ -99,7 +101,7 @@ function createSystemWithFileOverrides(sys, fileOverrides) {
  * @returns {string} The code with the reference pragmas removed.
  */
 function extractAndRemoveTopCommentPragmas(code, pragmas) {
-    const commentPragmas = getAllCommentPragmas(code);
+    const commentPragmas = getAllCommentPragmasFromText(code);
     /** @type {StringReplacement[]} */
     const replacements = [];
     for (const { comment: { start, end }, pragma } of commentPragmas) {
@@ -133,7 +135,7 @@ async function createTsConfigOverrides(frontendProjects, modifyTsConfig) {
             throw new Error(`Failed to read tsconfig file at <${project.tsConfig}>: ${e}`);
         }
     });
-    const overrides = await Promise.all(entries);
+    const overrides = await allSettled(entries);
     return new Map(overrides);
 }
 
@@ -178,7 +180,7 @@ async function createBundledDeclarationFiles(frontendProjects) {
         tsConfigJson.compilerOptions ??= {};
         delete tsConfigJson.compilerOptions.outDir;
         tsConfigJson.compilerOptions.rootDir = path.relative(project.root, PackagesDir);
-        tsConfigJson.compilerOptions.outFile = path.join("dist", "bundle.d.ts");
+        tsConfigJson.compilerOptions.outFile = path.join("dist", "index.d.ts");
         // @ts-expect-error New option introduced by TS 5.6, type-fest does not have it yet 
         tsConfigJson.compilerOptions.noCheck = true;
         tsConfigJson.compilerOptions.isolatedModules = false;
@@ -196,7 +198,7 @@ async function createMergedTypeDeclarationFile(frontendProjects) {
     const tempOutPath = path.resolve(DistDir, "index_temp.d.ts");
     try {
         // Collect all type declaration files that need to be merged
-        const inPaths = frontendProjects.map(project => path.resolve(project.dist, "bundle.d.ts"));
+        const inPaths = frontendProjects.map(project => path.resolve(project.dist, "index.d.ts"));
 
         // Delete output files if they exist,and create
         // the output directory if it doesn't exist
@@ -259,7 +261,7 @@ async function main() {
     await runTypeScriptOnFrontendProjects(frontendProjects);
 
     const t3 = Date.now();
-    await createBundledDeclarationFiles(frontendProjects);
+    // await createBundledDeclarationFiles(frontendProjects);
 
     const t4 = Date.now();
     await createMergedTypeDeclarationFile(frontendProjects);
@@ -267,11 +269,12 @@ async function main() {
     const t5 = Date.now();
     console.log(`Collected frontend projects in ${t2 - t1} ms`);
     console.log(`Checked types in ${t3 - t2} ms`);
-    console.log(`Created bundled declaration files in ${t4 - t3} ms`);
+    // console.log(`Created bundled declaration files in ${t4 - t3} ms`);
     console.log(`Merged type declarations in ${t5 - t4} ms`);
 }
 
 main().catch(e => {
-    console.error(e instanceof Error ? e.stack : e);
+    console.error("Failed to run TypeScript on frontend projects");
+    logError(e);
     process.exit(1);
 });

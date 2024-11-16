@@ -8,7 +8,8 @@
 		"checkJs": true,
 		"isolatedDeclarations": false,
 		"noEmit": true,
-		"types": ["node"]
+		"types": ["node"],
+		"lib": ["esnext"],
 	},
 	"include": ["bin", "common", "esbuild-plugin"]
 }

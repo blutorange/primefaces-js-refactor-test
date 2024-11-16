@@ -1,12 +1,13 @@
 /** @import { TypeDocOptions } from "typedoc"; */
-/** @import { FrontendProject} from "../common/find-package-paths.mjs" */
+/** @import { FrontendProject} from "../common/find-frontend-projects.mjs" */
 
 import { Application } from "typedoc";
 import path from "node:path";
 
-import { findFrontendProjects } from "../common/find-package-paths.mjs";
+import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
 import { DistDir, DocsDir, RootDir } from "../common/environment.mjs";
-import { assertExistsAndIsFile } from "../common/io.mjs";
+import { assertExistsAndIsFile } from "../common/file.mjs";
+import { logError } from "../common/error.mjs";
 
 /**
  * @returns {Partial<TypeDocOptions>}
@@ -73,6 +74,6 @@ async function main() {
 
 main().catch(e => {
     console.error("Failed to generate documentation");
-    console.error(e instanceof Error ? e.stack : e);
+    logError(e);
     process.exit(1);
 });

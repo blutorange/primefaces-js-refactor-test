@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 
 /**
  * Gets the stats of a file or directory, if it exists.
@@ -66,10 +67,22 @@ export async function assertDoesNotExist(fileOrFolder, reason) {
 /**
  * Check if the given directory exists and create it if it doesn't.
  * Creates all parent directories if they don't exist.
- * @param {string} fileOrFolder Path to the directory.
+ * @param {string} folder Path to the directory.
  */
-export async function ensureDirectoryExists(fileOrFolder) {
-    await fs.mkdir(fileOrFolder, { recursive: true });
+export async function ensureDirectoryExists(folder) {
+    await fs.mkdir(folder, { recursive: true });
+}
+
+/**
+ * Check if the given file exists and create an empty if it doesn't.
+ * Creates all parent directories if they don't exist.
+ * @param {string} file Path to the directory.
+ */
+export async function ensureFileExists(file) {
+    await ensureDirectoryExists(path.dirname(file));
+    if (!await existsAndIsFile(file)) {
+        await fs.writeFile(file, "");
+    }
 }
 
 /**
@@ -91,4 +104,17 @@ export async function deleteIfExists(fileOrFolder, log = false) {
         }
         await fs.unlink(fileOrFolder);
     }
+}
+
+/**
+ * Checks if child is within the parent directory (possibly nested).
+ * @param {string} parent The parent directory.
+ * @param {string} child The child file or directory.
+ * @returns {boolean} Whether the child is within the parent directory.
+ */
+export function isInSubFolderOf(parent, child) {
+    parent = path.normalize(path.resolve(parent));
+    child = path.normalize(path.resolve(child));
+    const relative = path.relative(parent, child);
+    return !relative.startsWith('../') && relative !== '..';
 }

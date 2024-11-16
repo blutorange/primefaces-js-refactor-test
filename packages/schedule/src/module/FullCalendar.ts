@@ -14,7 +14,7 @@ import listPlugin from "@fullcalendar/list";
 import momentPlugin from "@fullcalendar/moment";
 import momentTimezonePlugin from "@fullcalendar/moment-timezone";
 
-export type FullCalendarGlobal =
+type FullCalendarGlobal =
     & typeof import("@fullcalendar/core")
     & typeof import("@fullcalendar/interaction")
     & typeof import("@fullcalendar/daygrid")
@@ -32,7 +32,7 @@ export type FullCalendarGlobal =
         globalLocales: typeof import("@fullcalendar/core/locales-all.js")["default"];
     };
 
-export const FullCalendarGlobal: FullCalendarGlobal = {
+const FullCalendarGlobal: FullCalendarGlobal = {
     ...FullCalendarCore,
     ...FullCalendarInteraction,
     ...FullCalendarDayGrid,
@@ -40,12 +40,22 @@ export const FullCalendarGlobal: FullCalendarGlobal = {
     ...FullCalendarList,
     ...FullCalendarMoment,
     ...FullCalendarMomentTimeZone,
-    ...interactionPlugin,
-    interactionPlugin: interactionPlugin.default,
-    dayGridPlugin: dayGridPlugin.default,
-    timeGridPlugin: timeGridPlugin.default,
-    listPlugin: listPlugin.default,
-    momentPlugin: momentPlugin.default,
-    momentTimezonePlugin: momentTimezonePlugin.default,
-    globalLocales: FullCalendarCoreLocalesAll.default
+    interactionPlugin: interactionPlugin,
+    dayGridPlugin: dayGridPlugin,
+    timeGridPlugin: timeGridPlugin,
+    listPlugin: listPlugin,
+    momentPlugin: momentPlugin,
+    momentTimezonePlugin: momentTimezonePlugin,
+    globalLocales: FullCalendarCoreLocalesAll,
 };
+
+declare global {
+    export let FullCalendar: FullCalendarGlobal;
+    namespace PrimeType {
+        export interface WindowExtensions {
+            FullCalendar: typeof FullCalendarGlobal;
+        }
+    }
+}
+
+window.FullCalendar ??= FullCalendarGlobal;

@@ -1,3 +1,17 @@
+import fsSync from "node:fs";
+import { StringDecoder } from "node:string_decoder";
+
+/**
+ * Interface for reading Unicode character codes one by one from a source.
+ * @typedef {{
+* eof: boolean;
+* pos: number;
+* text: (from: number, to: number) => string;
+* next: () => number;
+* }} CharCodeReader
+*/
+undefined;
+
 /**
  * Type of EcmaScript token types that can appear before the program node.
  * - ws - Whitespace
@@ -13,11 +27,12 @@ undefined;
  * - start - The starting position of the comment (inclusive), with the leading `#!`.
  * - end - The ending position of the comment (exclusive), before the line terminator of end-of-input.
  * @typedef {{
-* readonly type: "hash-bang";
-* readonly start: number;
-* readonly end: number;
-* }} EcmaScriptHashBangComment 
-*/
+ * readonly type: "hash-bang";
+ * readonly text: string;
+ * readonly start: number;
+ * readonly end: number;
+ * }} EcmaScriptHashBangComment 
+ */
 undefined;
 
 /**
@@ -26,6 +41,7 @@ undefined;
  * - end - The ending position of the comment (exclusive), before the line terminator or end-of-input.
  * @typedef {{
  * readonly type: "single";
+ * readonly text: string;
  * readonly start: number;
  * readonly end: number;
  * }} EcmaScriptSingleLineComment 
@@ -38,6 +54,7 @@ undefined;
  * - end - The ending position of the comment (exclusive), with the trailing *&#47;
  * @typedef {{
  * readonly type: "multi";
+ * readonly text: string;
  * readonly start: number;
  * readonly end: number;
  * }} EcmaScriptMultiLineComment 
@@ -76,7 +93,6 @@ undefined;
 */
 undefined;
 
-
 /**
  * @typedef {{
  * args?: {
@@ -88,6 +104,12 @@ undefined;
  * }} PragmaSpecs
  */
 undefined;
+
+const CharExclamation = "!".charCodeAt(0);
+const CharSlash = "/".charCodeAt(0);
+const CharStar = "*".charCodeAt(0);
+
+const BufferSize = 2048;
 
 /** @type {Map<string, RegExp>} */
 const NamedArgRegExCache = new Map();
@@ -162,34 +184,139 @@ const CommentPragmas = {
  * @type {Record<string, EcmaScriptTokenType | undefined>}
  */
 const EcmaScriptTokenTypes = {
-  "\u0009": "ws",
-  "\u000B": "ws",
-  "\u000C": "ws",
-  "\uFEFF": "ws",
-  "\u0020": "ws",
-  "\u00A0": "ws",
-  "\u1680": "ws",
-  "\u2000": "ws",
-  "\u2001": "ws",
-  "\u2002": "ws",
-  "\u2003": "ws",
-  "\u2004": "ws",
-  "\u2005": "ws",
-  "\u2006": "ws",
-  "\u2007": "ws",
-  "\u2008": "ws",
-  "\u2009": "ws",
-  "\u200A": "ws",
-  "\u202F": "ws",
-  "\u205F": "ws",
-  "\u3000": "ws",
-  "\u000A": "line",
-  "\u000D": "line",
-  "\u2028": "line",
-  "\u2029": "line",
-  "#": "hash",
-  "/": "slash",
+  0x0009: "ws",
+  0x000B: "ws",
+  0x000C: "ws",
+  0xFEFF: "ws",
+  0x0020: "ws",
+  0x00A0: "ws",
+  0x1680: "ws",
+  0x2000: "ws",
+  0x2001: "ws",
+  0x2002: "ws",
+  0x2003: "ws",
+  0x2004: "ws",
+  0x2005: "ws",
+  0x2006: "ws",
+  0x2007: "ws",
+  0x2008: "ws",
+  0x2009: "ws",
+  0x200A: "ws",
+  0x202F: "ws",
+  0x205F: "ws",
+  0x3000: "ws",
+  0x000A: "line",
+  0x000D: "line",
+  0x2028: "line",
+  0x2029: "line",
+  0x0023: "hash",
+  0x002F: "slash",
 };
+
+/**
+ * Creates a character code reader that reads from a string in memory.
+ * @param {string} text
+ * @returns {CharCodeReader}
+ */
+function createTextCharCodeReader(text) {
+  /** @type {CharCodeReader} */
+  const reader = {
+    eof: false,
+    pos: 0,
+    text: (from, to) => text.slice(from, to),
+    next: () => {
+      if (reader.eof) {
+        return -1;
+      }
+      if (reader.pos >= text.length) {
+        reader.eof = true;
+        return -1;
+      }
+      return text.charCodeAt(reader.pos++);
+    },
+  };
+  return reader;
+}
+
+/**
+ * Creates a character code reader that reads from a file, but only
+ * on demand as more data is needed.
+ * @param {string} filePath Path to the file to read.
+ * @returns {Promise<CharCodeReader & Disposable>} A character code reader that reads from the file.
+ */
+async function createFileCharCodeReader(filePath) {
+  return new Promise((resolve, reject) => {
+    fsSync.open(filePath, "r", async (err, fd) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      const decoder = new StringDecoder("utf8");
+      const buffer = Uint8Array.from({ length: BufferSize });
+
+      /** @type {string[]} */
+      let chunks = [];
+      /** @type {string} */
+      let chunk = "";
+      let chunkPos = 0;
+
+      /** @type {CharCodeReader & Disposable} */
+      const reader = {
+        eof: false,
+        pos: 0,
+        [Symbol.dispose]: () => {
+          fsSync.closeSync(fd);
+        },
+        next: () => {
+          if (reader.eof) {
+            return -1;
+          }
+          if (chunkPos >= chunk.length) {
+            chunkPos = 0;
+            do {
+              const bytesRead = fsSync.readSync(fd, buffer);
+              if (bytesRead === 0) {
+                reader.eof = true;
+                return -1;
+              }
+              chunk = decoder.write(buffer.slice(0, bytesRead));
+              chunks.push(chunk);
+            } while (chunk.length === 0);
+          }
+          reader.pos++;
+          return chunk.charCodeAt(chunkPos++);
+        },
+        text: (from, to) => {
+          let index = 0;
+          /** @type {string[] | undefined} */
+          let result;
+          for (const chunk of chunks) {
+            const end = index + chunk.length;
+            if (from >= index && from < end) {
+              if (to > index && to <= end) {
+                return chunk.slice(from - index, to - index);
+              }
+              result ??= [];
+              result.push(chunk.slice(from - index));
+            } else if (result) {
+              if (to > index && to <= end) {
+                result.push(chunk.slice(0, to - index));
+                break;
+              } else {
+                result.push(chunk);
+              }
+            }
+            index = end;
+          }
+          return result?.join("") ?? "";
+        },
+      };
+
+      resolve(reader);
+    });
+  });
+}
 
 /**
  * From
@@ -222,15 +349,11 @@ function getNamedArgRegEx(name) {
  * SourceCharacter ::
  *     any Unicode code point
  * ```
- * @param {string} code 
- * @param {number} i 
- * @returns {number}
+ * @param {CharCodeReader} reader
  */
-function consumeSingleLineCommentChars(code, i) {
-  while (i < code.length && EcmaScriptTokenTypes[code[i]] !== "line") {
-    i++;
-  }
-  return i;
+function consumeSingleLineCommentChars(reader) {
+  let char;
+  while (char = reader.next(), char !== -1 && EcmaScriptTokenTypes[char] !== "line");
 }
 
 /**
@@ -254,16 +377,17 @@ function consumeSingleLineCommentChars(code, i) {
  * SourceCharacter ::
  *     any Unicode code point
  * ```
- * @param {string} code 
- * @param {number} i 
- * @returns {number}
+ * @param {CharCodeReader} reader 
  */
-function consumeMultiLineCommentChars(code, i) {
-  while (i < code.length) {
-    if (code[i] === "*" && code[i + 1] === "/") {
-      return i;
+function consumeMultiLineCommentChars(reader) {
+  let last = -1;
+  let char;
+  while (char = reader.next(), char !== -1) {
+    // Keep discarding comments, until we get to '*/', which ends the comment
+    if (last === CharStar && char === CharSlash) {
+      return;
     }
-    i++;
+    last = char;
   }
   throw new Error("Unexpected end-of-input in multi-line comment");
 }
@@ -275,24 +399,16 @@ function consumeMultiLineCommentChars(code, i) {
  * HashbangComment ::
  *     <#> <!> SingleLineCommentChars[opt]
  * ```
- * @param {string} code 
- * @param {number} i
+ * @param {CharCodeReader} reader
  * @param {EcmaScriptComment[]} comments
- * @returns {number}
  */
-function consumeHashBang(code, i, comments) {
-  const start = i;
-  if (code[i] !== "#") {
-    throw new Error(`Expected hash character (#) at position ${i}");`);
+function consumeHashBang(reader, comments) {
+  const start = reader.pos - 1;
+  if (reader.next() !== CharExclamation) {
+    throw new Error(`Expected bang character (!) at position ${reader.pos - 1}`);
   }
-  i++;
-  if (code[i] !== "!") {
-    throw new Error(`Expected bang character (!) at position ${i}`);
-  }
-  i++;
-  i = consumeSingleLineCommentChars(code, i);
-  comments.push({ type: "hash-bang", start, end: i });
-  return i;
+  consumeSingleLineCommentChars(reader);
+  comments.push({ type: "hash-bang", start, end: reader.pos, text: reader.text(start, reader.pos - 1) });
 }
 
 /**
@@ -302,24 +418,13 @@ function consumeHashBang(code, i, comments) {
  * SingleLineComment ::
  *     </> </> SingleLineCommentChars[opt]
  * ```
- * @param {string} code 
- * @param {number} i 
+ * @param {CharCodeReader} reader 
  * @param {EcmaScriptComment[]} comments
- * @returns {number}
  */
-function consumeSingleLineComment(code, i, comments) {
-  const start = i;
-  if (code[i] !== "/") {
-    throw new Error(`Expected slash character (/) at position ${i}`);
-  }
-  i++;
-  if (code[i] !== "/") {
-    throw new Error(`Expected slash character (/) at position ${i}`);
-  }
-  i++;
-  i = consumeSingleLineCommentChars(code, i);
-  comments.push({ type: "single", start, end: i });
-  return i;
+function consumeSingleLineComment(reader, comments) {
+  const start = reader.pos - 2;
+  consumeSingleLineCommentChars(reader);
+  comments.push({ type: "single", start, end: reader.pos, text: reader.text(start, reader.pos - 1) });
 }
 
 /**
@@ -329,32 +434,13 @@ function consumeSingleLineComment(code, i, comments) {
  * MultiLineComment ::
  * </> <*> MultiLineCommentChars[opt] <*> </>
  * ```
- * @param {string} code 
- * @param {number} i 
+ * @param {CharCodeReader} reader 
  * @param {EcmaScriptComment[]} comments
- * @returns {number}
  */
-function consumeMultiLineComment(code, i, comments) {
-  const start = i;
-  if (code[i] !== "/") {
-    throw new Error(`Expected slash character (/) at position ${i}`);
-  }
-  i++;
-  if (code[i] !== "*") {
-    throw new Error(`Expected star character (*) at position ${i}`);
-  }
-  i++;
-  i = consumeMultiLineCommentChars(code, i);
-  comments.push({ type: "multi", start, end: i });
-  if (code[i] !== "*") {
-    throw new Error(`Expected star character (*) at position ${i}`);
-  }
-  i++;
-  if (code[i] !== "/") {
-    throw new Error(`Expected slash character (/) at position ${i}`);
-  }
-  i++;
-  return i;
+function consumeMultiLineComment(reader, comments) {
+  const start = reader.pos - 2;
+  consumeMultiLineCommentChars(reader);
+  comments.push({ type: "multi", start, end: reader.pos, text: reader.text(start, reader.pos) });
 }
 
 /**
@@ -365,22 +451,17 @@ function consumeMultiLineComment(code, i, comments) {
  *     MultiLineComment
  *     SingleLineComment
  * ```
- * @param {string} code 
- * @param {number} i
+ * @param {CharCodeReader} reader
  * @param {EcmaScriptComment[]} comments
- * @returns {number} 
  */
-function consumeComment(code, i, comments) {
-  if (code[i] !== "/") {
-    throw new Error(`Expected slash character (/) at position ${i}`);
-  }
-  switch (code[i + 1]) {
-    case "/":
-      return consumeSingleLineComment(code, i, comments);
-    case "*":
-      return consumeMultiLineComment(code, i, comments);
+function consumeComment(reader, comments) {
+  switch (reader.next()) {
+    case CharSlash:
+      return consumeSingleLineComment(reader, comments);
+    case CharStar:
+      return consumeMultiLineComment(reader, comments);
     default:
-      throw new Error(`Expected slash (/) or star (*) character at position ${i + 1}`);
+      throw new Error(`Expected slash (/) or star (*) character at position ${reader.pos - 1}`);
   }
 }
 
@@ -394,29 +475,29 @@ function consumeComment(code, i, comments) {
  * triple-slash directive, so effectively, we only needs to parse the
  * beginning of the file for comments.
  * 
- * @param {string} code Code to parse for comments.
+ * @param {CharCodeReader} reader Code to parse for comments.
  * @returns {EcmaScriptComment[]} Comments that appear before the program.
  */
-function consumeEcmaScriptProgramHeader(code) {
+function consumeEcmaScriptProgramHeader(reader) {
   /** @type {EcmaScriptComment[]} */
   const comments = [];
-  let i = 0;
-  loop: while (i < code.length) {
-    const char = code[i];
-    const tokenType = EcmaScriptTokenTypes[char];
-    switch (tokenType) {
+  /** @type {number|undefined} */
+  let char;
+  let hasBom = false;
+  loop: while (char = reader.next(), char !== -1) {
+    hasBom &&= reader.pos === 1 && char === 0xFEFF;
+    switch (EcmaScriptTokenTypes[char]) {
       case "line":
       case "ws":
-        i++;
         break;
       case "hash":
-        if (i !== 0 && (i !== 1 || code[0] !== "\uFEFF")) {
+        if (!(reader.pos === 1 || hasBom && reader.pos === 2)) {
           throw new Error("Hash bang (#!) must appear at the beginning of the file.");
         }
-        i = consumeHashBang(code, i, comments);
+        consumeHashBang(reader, comments);
         break;
       case "slash":
-        i = consumeComment(code, i, comments);
+        consumeComment(reader, comments);
         break;
       // Some other source character
       // We are done, now the main program starts
@@ -434,16 +515,15 @@ function consumeEcmaScriptProgramHeader(code) {
  * Extracts a comment pragma from a comment text. Only considers
  * triple-slash XML references, as we need only those for the plugin.
  *
- * @param {string} code The source code.
  * @param {EcmaScriptComment} comment A comment in the source code to extract the pragma from.
  * @returns {TypeScriptPragma | undefined}
  */
-function extractPragma(code, comment) {
-  const text = code.slice(comment.start, comment.end);
+function extractPragma(comment) {
+  const text = comment.text;
 
   const tripleSlash = comment.type === "single" ? TripleSlashXMLCommentStartRegEx.exec(text) : undefined;
   if (tripleSlash) {
-    const name = tripleSlash[1].toLowerCase();
+    const name = /** @type {string} */(tripleSlash[1]).toLowerCase();
     const pragma = CommentPragmas[name];
     if (pragma?.kind !== "TripleSlashXML") {
       return undefined;
@@ -462,7 +542,7 @@ function extractPragma(code, comment) {
       }
       else if (matchResult) {
         const value = matchResult[2] || matchResult[3];
-        args[arg.name] = value;
+        args[arg.name] = value ?? "";
       }
     }
     return { name, args, type: "TripleSlashXML" };
@@ -478,13 +558,44 @@ function extractPragma(code, comment) {
  * and returns them. Includes details about their source code location.
  * @implNote For now, only `TripleSlashXML` pragmas are returned,
  * as we only need those for now.
- * @param {string} code 
+ * @param {CharCodeReader} reader Content of a TypeScript / JavaScript file.
  * @returns {TypeScriptCommentPragma[]}
  */
-export function getAllCommentPragmas(code) {
-  const comments = consumeEcmaScriptProgramHeader(code);
-  return comments.map(comment => {
-    const pragma = extractPragma(code, comment);
-    return pragma !== undefined ? { comment, pragma } : undefined;
-  }).filter(x => x !== undefined);
+function getAllCommentPragmas(reader) {
+  const comments = consumeEcmaScriptProgramHeader(reader);
+  return comments
+    .map(comment => {
+      const pragma = extractPragma(comment);
+      return pragma !== undefined ? { comment, pragma } : undefined;
+    })
+    .filter(x => x !== undefined);
+}
+
+/**
+ * Finds all comment pragmas in the given TypeScript / JavaScript code,
+ * and returns them. Includes details about their source code location.
+ * @implNote For now, only `TripleSlashXML` pragmas are returned,
+ * as we only need those for now.
+ * @param {string} code Content of a TypeScript / JavaScript file.
+ * @returns {TypeScriptCommentPragma[]}
+ */
+export function getAllCommentPragmasFromText(code) {
+  return getAllCommentPragmas(createTextCharCodeReader(code));
+}
+
+/**
+ * Finds all comment pragmas in the given TypeScript / JavaScript code,
+ * and returns them. Includes details about their source code location.
+ * @implNote For now, only `TripleSlashXML` pragmas are returned,
+ * as we only need those for now.
+ * @param {string} filePath Path to a TypeScript / JavaScript file.
+ * @returns {Promise<TypeScriptCommentPragma[]>}
+ */
+export async function getAllCommentPragmasFromFile(filePath) {
+  const reader = await createFileCharCodeReader(filePath);
+  try {
+    return getAllCommentPragmas(reader);
+  } finally {
+    reader[Symbol.dispose]();
+  }
 }

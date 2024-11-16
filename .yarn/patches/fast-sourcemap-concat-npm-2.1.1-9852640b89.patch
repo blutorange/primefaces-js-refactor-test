@@ -1,0 +1,36 @@
+diff --git a/lib/source-map.js b/lib/source-map.js
+index 5c4e92c7ccd8d486d57549b7516fc0afdcda5cf9..70d64bc1d8e7afbf38979a352be9bdd5f970e35f 100644
+--- a/lib/source-map.js
++++ b/lib/source-map.js
+@@ -26,6 +26,7 @@ class SourceMap {
+     this.cache = opts.cache;
+     this.mapFile = opts.mapFile || (this.outputFile && this.outputFile.replace(/\.js$/, '') + '.map');
+     this.mapURL = opts.mapURL || (this.mapFile && path.basename(this.mapFile));
++    this.mapStyle = opts.mapStyle || "file";
+     this.mapCommentType = opts.mapCommentType || 'line';
+     this._initializeStream();
+     this.id = opts.pluginId;
+@@ -427,13 +428,20 @@ class SourceMap {
+           );
+         }
+ 
++        let sourceMapContent;
++        if (sourceMap.mapStyle === 'data') {
++          sourceMapContent = 'data:application/json;charset=utf-8;base64,' + Buffer.from(JSON.stringify(sourceMap.content)).toString('base64');
++        } else {
++          sourceMapContent = sourceMap.mapURL;
++        }
++
+         if (sourceMap.mapCommentType === 'line') {
+-          stream.write('//# sourceMappingURL=' + sourceMap.mapURL + '\n');
++          stream.write('//# sourceMappingURL=' + sourceMapContent + '\n');
+         } else {
+-          stream.write('/*# sourceMappingURL=' + sourceMap.mapURL + ' */\n');
++          stream.write('/*# sourceMappingURL=' + sourceMapContent + ' */\n');
+         }
+ 
+-        if (sourceMap.mapFile) {
++        if (sourceMap.mapFile && sourceMap.mapStyle === 'file') {
+           fs.mkdirpSync(path.dirname(sourceMap.mapFile));
+           fs.writeFileSync(sourceMap.mapFile, JSON.stringify(sourceMap.content));
+         }

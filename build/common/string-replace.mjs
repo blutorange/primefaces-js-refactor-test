@@ -6,7 +6,7 @@
  * @typedef {{
  * readonly start: number;
  * readonly end: number;
- * readonly value: string
+ * readonly value: string | string[];
  * }} StringReplacement
  */
 undefined;
@@ -34,7 +34,11 @@ export function applyStringReplacements(value, replacements) {
         // Append the code after the last replacement and before the current replacement
         replaced.push(value.slice(last, replacement.start));
         // Append the replacement
-        replaced.push(replacement.value);
+        if (Array.isArray(replacement.value)) {
+            replaced.push(...replacement.value);
+        } else {
+            replaced.push(replacement.value);
+        }
         last = replacement.end;
     }
     // Append the code after the last replacement
