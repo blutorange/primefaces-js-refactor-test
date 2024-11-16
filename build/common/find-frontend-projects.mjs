@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 
-import { assertDoesNotExist, assertExistsAndIsFile, ensureDirectoryExists, existsAndIsDirectory, existsAndIsFile } from "./file.mjs";
+import { assertDoesNotExist, assertExistsAndIsFile, ensureDirectoryExists, existsAndIsFile } from "./file.mjs";
 import { PackagesDir } from "./environment.mjs";
 
 /**

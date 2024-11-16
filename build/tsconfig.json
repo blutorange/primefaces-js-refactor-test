@@ -11,5 +11,5 @@
 		"types": ["node"],
 		"lib": ["esnext"],
 	},
-	"include": ["bin", "common", "esbuild-plugin"]
+	"include": ["bin", "common", "esbuild-plugin", "typedoc-plugin"]
 }

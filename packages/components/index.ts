@@ -1,16 +1,20 @@
+import { InputText } from "./src/InputText.js";
 import { InputTextArea } from "./src/InputTextArea.js";
 
 declare global {
     namespace PrimeType {
         export interface WidgetRegistry {
+            InputText: typeof InputText;
             InputTextArea: typeof InputTextArea;
         }
     }
     namespace PrimeType.widget {
+        export type InputText = import("./src/InputText.js").InputText;
         export type InputTextAreaCfg = import("./src/InputTextArea.js").InputTextAreaCfg;
     }
 }
 
 // @ts-expect-errors
 (window.PrimeFaces ??= {}).widget ??= {};
-PrimeFaces.widget.BaseWidget = InputTextArea;
+PrimeFaces.widget.InputText = InputText;
+PrimeFaces.widget.InputTextArea = InputTextArea;

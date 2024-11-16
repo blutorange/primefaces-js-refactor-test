@@ -33,6 +33,7 @@ function createTypeDocOptionsForFrontendProjects(frontendProjects) {
         out: DocsDir,
         tsconfig: tsConfig,
         plugin: [
+            "./build/typedoc-plugin/typeof-class-plugin.mjs",
             "typedoc-plugin-merge-modules",
             // "typedoc-plugin-missing-exports",
             "typedoc-plugin-dt-links",
