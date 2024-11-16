@@ -13,6 +13,7 @@ async function main() {
         deleteIfExists(TarBall),
         deleteIfExists(DistDir),
         ...frontendProjects.map(async project => await deleteIfExists(project.dist)),
+        ...frontendProjects.map(async project => await deleteIfExists(project.docs)),
     ]);
 }
 
