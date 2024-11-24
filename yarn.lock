@@ -278,7 +278,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.46"
     type-fest: "npm:4.26.1"
-    typedoc: "patch:typedoc@npm%3A0.26.11#~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch"
+    typedoc: "patch:typedoc@patch%3Atypedoc@npm%253A0.26.11%23~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch%3A%3Aversion=0.26.11&hash=705b3b#~/.yarn/patches/typedoc-patch-ab68564c32.patch"
     typedoc-plugin-dt-links: "npm:1.0.2"
     typedoc-plugin-mdn-links: "npm:3.3.7"
     typedoc-plugin-merge-modules: "npm:6.0.3"
@@ -877,7 +877,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@patch:typedoc@npm%3A0.26.11#~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch":
+"typedoc@patch:typedoc@npm%3A0.26.11#~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch::version=0.26.11&hash=705b3b":
   version: 0.26.11
   resolution: "typedoc@patch:typedoc@npm%3A0.26.11#~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch::version=0.26.11&hash=705b3b"
   dependencies:
@@ -891,6 +891,23 @@ __metadata:
   bin:
     typedoc: bin/typedoc
   checksum: 10c0/25b446e24743444343898a6aefd8439579b276678d0e81418baedd4c75e535a8381d19d3bf6b690afcdc2314fd737189193e40cee9715b04999df0c9d98c7920
+  languageName: node
+  linkType: hard
+
+"typedoc@patch:typedoc@patch%3Atypedoc@npm%253A0.26.11%23~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch%3A%3Aversion=0.26.11&hash=705b3b#~/.yarn/patches/typedoc-patch-ab68564c32.patch":
+  version: 0.26.11
+  resolution: "typedoc@patch:typedoc@patch%3Atypedoc@npm%253A0.26.11%23~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch%3A%3Aversion=0.26.11&hash=705b3b#~/.yarn/patches/typedoc-patch-ab68564c32.patch::version=0.26.11&hash=1bb1fa"
+  dependencies:
+    lunr: "npm:^2.3.9"
+    markdown-it: "npm:^14.1.0"
+    minimatch: "npm:^9.0.5"
+    shiki: "npm:^1.16.2"
+    yaml: "npm:^2.5.1"
+  peerDependencies:
+    typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
+  bin:
+    typedoc: bin/typedoc
+  checksum: 10c0/6c4721c975fb5a9276f41fba1c78751775dfc58279d6cd6fa4047756a8f5929fdd0b0b3bbd119b785d6eb8ee7d21f3b861f56b316f216d7df168c8e8cecba0df
   languageName: node
   linkType: hard
 

@@ -40,7 +40,7 @@
     "@types/node": "22.9.0",
     "esbuild": "0.24.0",
     "type-fest": "4.26.1",
-    "typedoc": "patch:typedoc@npm%3A0.26.11#~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch",
+    "typedoc": "patch:typedoc@patch%3Atypedoc@npm%253A0.26.11%23~/.yarn/patches/typedoc-npm-0.26.11-24fa09b154.patch%3A%3Aversion=0.26.11&hash=705b3b#~/.yarn/patches/typedoc-patch-ab68564c32.patch",
     "typedoc-plugin-dt-links": "1.0.2",
     "typedoc-plugin-mdn-links": "3.3.7",
     "typedoc-plugin-merge-modules": "6.0.3",

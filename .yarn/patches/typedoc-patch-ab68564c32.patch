@@ -1,0 +1,14 @@
+diff --git a/dist/lib/converter/types.js b/dist/lib/converter/types.js
+index cc8beef359a61cfc0e05c73db612eca27173e3aa..ef7d617034e1ef2975358c3290efdaf14a58dfec 100644
+--- a/dist/lib/converter/types.js
++++ b/dist/lib/converter/types.js
+@@ -238,8 +238,7 @@ const importType = {
+     kind: [typescript_1.default.SyntaxKind.ImportType],
+     convert(context, node) {
+         const name = node.qualifier?.getText() ?? "__module";
+-        const symbol = context.checker.getSymbolAtLocation(node);
+-        (0, assert_1.default)(symbol, "Missing symbol when converting import type node");
++        const symbol = context.expectSymbolAtLocation(node.qualifier || node);
+         return models_1.ReferenceType.createSymbolReference(context.resolveAliasedSymbol(symbol), context, name);
+     },
+     convertType(context, type) {
