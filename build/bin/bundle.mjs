@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import * as esbuild from "esbuild";
 
 import { DistDir, IsProduction, RootDir } from "../common/environment.mjs";
-import { ensureDirectoryExists } from "../common/file.mjs";
+import { ensureDirectoryExists } from "../lang/file.mjs";
 import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
 
 /**

@@ -16,21 +16,21 @@ async function fileStats(fileOrFolder) {
 }
 
 /**
- * Checks if the given path is a file and exists.
- * @param {string} fileOrFolder 
- * @returns {Promise<boolean>}
- */
-export async function existsAndIsFile(fileOrFolder) {
-    return (await fileStats(fileOrFolder))?.isFile() ?? false;
-}
-
-/**
  * Checks if the given path exists (neither file nor directory).
  * @param {string} fileOrFolder 
  * @returns {Promise<boolean>}
  */
 export async function exists(fileOrFolder) {
     return (await fileStats(fileOrFolder)) !== undefined;
+}
+
+/**
+ * Checks if the given path is a file and exists.
+ * @param {string} fileOrFolder 
+ * @returns {Promise<boolean>}
+ */
+export async function existsAndIsFile(fileOrFolder) {
+    return (await fileStats(fileOrFolder))?.isFile() ?? false;
 }
 
 /**
@@ -104,17 +104,4 @@ export async function deleteIfExists(fileOrFolder, log = false) {
         }
         await fs.unlink(fileOrFolder);
     }
-}
-
-/**
- * Checks if child is within the parent directory (possibly nested).
- * @param {string} parent The parent directory.
- * @param {string} child The child file or directory.
- * @returns {boolean} Whether the child is within the parent directory.
- */
-export function isInSubFolderOf(parent, child) {
-    parent = path.normalize(path.resolve(parent));
-    child = path.normalize(path.resolve(child));
-    const relative = path.relative(parent, child);
-    return !relative.startsWith('../') && relative !== '..';
 }

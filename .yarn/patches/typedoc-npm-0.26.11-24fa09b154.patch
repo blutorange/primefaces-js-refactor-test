@@ -1,0 +1,25 @@
+diff --git a/dist/lib/converter/symbols.js b/dist/lib/converter/symbols.js
+index 26cd5b9a2b13cee618b579c7cd941530511689c7..412d63d9356b0a24d66fdabe950e129148c7de22 100644
+--- a/dist/lib/converter/symbols.js
++++ b/dist/lib/converter/symbols.js
+@@ -175,7 +175,19 @@ function convertNamespace(context, symbol, exportSymbol) {
+         reflection = existingReflection;
+     }
+     else {
+-        reflection = context.createDeclarationReflection(models_1.ReflectionKind.Namespace, symbol, exportSymbol);
++        let kind = models_1.ReflectionKind.Namespace;
++        let nameOverride;
++        // #2778 - always treat declare module "foo" as a module, not a namespace
++        const declareModule = symbol.declarations?.find(
++            (mod) =>
++                typescript_1.default.isModuleDeclaration(mod) && typescript_1.default.isStringLiteral(mod.name),
++        );
++        if (declareModule) {
++            kind = models_1.ReflectionKind.Module;
++            nameOverride = declareModule.name.text;
++        }
++
++        reflection = context.createDeclarationReflection(kind, symbol, exportSymbol, nameOverride);
+         context.finalizeDeclarationReflection(reflection);
+     }
+     convertSymbols(context.withScope(reflection), context.checker

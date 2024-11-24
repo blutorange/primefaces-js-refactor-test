@@ -9,7 +9,7 @@ declare global {
         }
     }
     namespace PrimeType.widget {
-        export type InputText = import("./src/InputText.js").InputText;
+        export type InputTextCfg = import("./src/InputText.js").InputTextCfg;
         export type InputTextAreaCfg = import("./src/InputTextArea.js").InputTextAreaCfg;
     }
 }

@@ -1,46 +1,46 @@
 /** @import { TypeDocOptions } from "typedoc"; */
-/** @import { FrontendProject} from "../common/find-frontend-projects.mjs" */
 
-import { Application } from "typedoc";
 import path from "node:path";
 
-import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
+import { Application } from "typedoc";
+
 import { DistDir, DocsDir, RootDir } from "../common/environment.mjs";
-import { assertExistsAndIsFile } from "../common/file.mjs";
-import { logError } from "../common/error.mjs";
+import { assertExistsAndIsFile } from "../lang/file.mjs";
+import { logError } from "../lang/error.mjs";
 
 /**
  * @returns {Partial<TypeDocOptions>}
  */
 function createBaseTypeDocOptions() {
     return {
+        basePath: RootDir,
+        excludeExternals: true,
+        externalPattern: ["**/node_modules/**"],
     };
 }
 
 /**
- * @param {FrontendProject[]} frontendProjects
  * @returns {Partial<TypeDocOptions>}
  */
-function createTypeDocOptionsForFrontendProjects(frontendProjects) {
+function createTypeDocOptionsForFrontendProjects() {
     const tsConfig = path.resolve(RootDir, "tsconfig.json");
-    const mergedDeclarationsFile = path.resolve(DistDir, "index.d.ts");
-    assertExistsAndIsFile(mergedDeclarationsFile, "Did you forget to run 'build:types' beforehand?");
+    const declarationsFile = path.resolve(DistDir, "index.d.ts");
+    assertExistsAndIsFile(declarationsFile, "Did you forget to run 'build:types' beforehand?");
     return {
         ...createBaseTypeDocOptions(),
-        basePath: RootDir,
-        entryPoints: [mergedDeclarationsFile],
+        entryPoints: [declarationsFile],
         entryPointStrategy: "resolve",
         out: DocsDir,
         tsconfig: tsConfig,
         plugin: [
             "./build/typedoc-plugin/typeof-class-plugin.mjs",
+            "./build/typedoc-plugin/rename-module-plugin.mjs",
             "typedoc-plugin-merge-modules",
-            // "typedoc-plugin-missing-exports",
             "typedoc-plugin-dt-links",
             "typedoc-plugin-mdn-links",
         ],
-        // mergeModulesMergeMode: "module",
-        // placeInternalsInOwningModule:false,
+        // @ts-expect-error
+        mergeModulesMergeMode: "module",
     };
 }
 
@@ -48,11 +48,9 @@ function createTypeDocOptionsForFrontendProjects(frontendProjects) {
  * Runs TypeDoc on the generated merged declaration file with the contents
  * of all frontend projects. Writes the HTML documentation to the `docs`
  * directory. 
- *
- * @param {FrontendProject[]} frontendProjects Frontend projects to run TypeDoc on.
  */
-async function runTypeDocOnFrontendProjects(frontendProjects) {
-    const options = createTypeDocOptionsForFrontendProjects(frontendProjects);
+async function runTypeDocOnFrontendProjects() {
+    const options = createTypeDocOptionsForFrontendProjects();
     const app = await Application.bootstrapWithPlugins(options);
     const project = await app.convert();
     if (project === undefined) {
@@ -69,8 +67,10 @@ async function runTypeDocOnFrontendProjects(frontendProjects) {
  * projects from the type annotations and JSDoc comments.
  */
 async function main() {
-    const frontendProjects = await findFrontendProjects();
-    await runTypeDocOnFrontendProjects(frontendProjects);
+    const t1 = Date.now();
+    await runTypeDocOnFrontendProjects();
+    const t2 = Date.now();
+    console.log(`Documentation generated in ${t2 - t1}ms`);
 }
 
 main().catch(e => {

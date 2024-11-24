@@ -11,4 +11,3 @@ export const DocsDir = path.resolve(RootDir, "docs");
 export const TarBall = path.resolve(RootDir, "package.tgz");
 
 export const IsProduction = process.env.NODE_ENV !== "development";
-

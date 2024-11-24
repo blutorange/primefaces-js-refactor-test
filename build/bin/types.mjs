@@ -2,7 +2,7 @@
 /** @import { TsConfigJson } from "type-fest" */
 
 /** @import { FrontendProject } from "../common/find-frontend-projects.mjs"; */
-/** @import { StringReplacement } from "../common/string-replace.mjs" */
+/** @import { StringReplacement } from "../lang/string.mjs" */
 
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -17,11 +17,11 @@ import {
 
 import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
 import { DistDir, IsProduction, PackagesDir } from "../common/environment.mjs";
-import { deleteIfExists, ensureDirectoryExists } from "../common/file.mjs";
+import { deleteIfExists, ensureDirectoryExists } from "../lang/file.mjs";
 import { getAllCommentPragmasFromText } from "../common/comment-pragma.mjs";
-import { applyStringReplacements } from "../common/string-replace.mjs";
-import { allSettled } from "../common/promise.mjs";
-import { logError } from "../common/error.mjs";
+import { applyStringReplacements } from "../lang/string.mjs";
+import { allSettled } from "../lang/promise.mjs";
+import { logError } from "../lang/error.mjs";
 
 /**
  * @template K
@@ -175,6 +175,8 @@ async function createBundledDeclarationFiles(frontendProjects) {
     // or `verbatimModuleSyntax`. These checks are useful for various
     // reasons, including performance and correctness when bundling
     // TypeScript code with ESBuild.
+    //
+    // So we need to use a custom tsconfig.json with a few adjusted options.
     await runTypeScriptOnFrontendProjects(frontendProjects, (project, tsConfigJson) => {
         // Set "outFile" to "index.d.ts" and disable options not compatible with "outFile"
         tsConfigJson.compilerOptions ??= {};
@@ -183,6 +185,7 @@ async function createBundledDeclarationFiles(frontendProjects) {
         tsConfigJson.compilerOptions.outFile = path.join("dist", "index.d.ts");
         // @ts-expect-error New option introduced by TS 5.6, type-fest does not have it yet 
         tsConfigJson.compilerOptions.noCheck = true;
+        tsConfigJson.compilerOptions.removeComments = false;
         tsConfigJson.compilerOptions.isolatedModules = false;
         tsConfigJson.compilerOptions.verbatimModuleSyntax = false;
     });
@@ -276,7 +279,7 @@ async function main() {
 }
 
 main().catch(e => {
-    console.error("Failed to run TypeScript on frontend projects");
+    console.error("Failed to run TypeScript on frontend projects. Check above for details.");
     logError(e);
     process.exit(1);
 });

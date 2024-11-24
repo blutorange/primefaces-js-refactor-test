@@ -1,6 +1,6 @@
 import { DistDir, TarBall } from "../common/environment.mjs";
 import { findFrontendProjects } from "../common/find-frontend-projects.mjs";
-import { deleteIfExists } from "../common/file.mjs";
+import { deleteIfExists } from "../lang/file.mjs";
 
 /**
  * Deletes all generated files and directories. Usually clean is done by

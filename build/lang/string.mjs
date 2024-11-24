@@ -48,3 +48,15 @@ export function applyStringReplacements(value, replacements) {
 
     return replaced.join("");
 }
+
+/**
+ * Gets the substring before the first occurrence of the separator in the value.
+ * When the separator is not found, the entire value is returned.
+ * @param {string} value 
+ * @param {string} separator 
+ * @returns {string} The substring before the first occurrence of the separator. 
+ */
+export function substringBeforeFirst(value, separator) {
+    const index = value.indexOf(separator);
+    return index >= 0 ? value.slice(0, index) : value;
+}

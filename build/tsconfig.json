@@ -11,5 +11,5 @@
 		"types": ["node"],
 		"lib": ["esnext"],
 	},
-	"include": ["bin", "common", "esbuild-plugin", "typedoc-plugin"]
+	"include": ["bin", "common", "esbuild-plugin", "typedoc-plugin", "lang/error.mjs", "lang/file.mjs", "lang/promise.mjs", "lang/string.mjs"]
 }

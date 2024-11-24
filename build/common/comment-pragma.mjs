@@ -1,6 +1,3 @@
-import fsSync from "node:fs";
-import { StringDecoder } from "node:string_decoder";
-
 /**
  * Interface for reading Unicode character codes one by one from a source.
  * @typedef {{
@@ -108,8 +105,6 @@ undefined;
 const CharExclamation = "!".charCodeAt(0);
 const CharSlash = "/".charCodeAt(0);
 const CharStar = "*".charCodeAt(0);
-
-const BufferSize = 2048;
 
 /** @type {Map<string, RegExp>} */
 const NamedArgRegExCache = new Map();
@@ -239,86 +234,6 @@ function createTextCharCodeReader(text) {
 }
 
 /**
- * Creates a character code reader that reads from a file, but only
- * on demand as more data is needed.
- * @param {string} filePath Path to the file to read.
- * @returns {Promise<CharCodeReader & Disposable>} A character code reader that reads from the file.
- */
-async function createFileCharCodeReader(filePath) {
-  return new Promise((resolve, reject) => {
-    fsSync.open(filePath, "r", async (err, fd) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      const decoder = new StringDecoder("utf8");
-      const buffer = Uint8Array.from({ length: BufferSize });
-
-      /** @type {string[]} */
-      let chunks = [];
-      /** @type {string} */
-      let chunk = "";
-      let chunkPos = 0;
-
-      /** @type {CharCodeReader & Disposable} */
-      const reader = {
-        eof: false,
-        pos: 0,
-        [Symbol.dispose]: () => {
-          fsSync.closeSync(fd);
-        },
-        next: () => {
-          if (reader.eof) {
-            return -1;
-          }
-          if (chunkPos >= chunk.length) {
-            chunkPos = 0;
-            do {
-              const bytesRead = fsSync.readSync(fd, buffer);
-              if (bytesRead === 0) {
-                reader.eof = true;
-                return -1;
-              }
-              chunk = decoder.write(buffer.slice(0, bytesRead));
-              chunks.push(chunk);
-            } while (chunk.length === 0);
-          }
-          reader.pos++;
-          return chunk.charCodeAt(chunkPos++);
-        },
-        text: (from, to) => {
-          let index = 0;
-          /** @type {string[] | undefined} */
-          let result;
-          for (const chunk of chunks) {
-            const end = index + chunk.length;
-            if (from >= index && from < end) {
-              if (to > index && to <= end) {
-                return chunk.slice(from - index, to - index);
-              }
-              result ??= [];
-              result.push(chunk.slice(from - index));
-            } else if (result) {
-              if (to > index && to <= end) {
-                result.push(chunk.slice(0, to - index));
-                break;
-              } else {
-                result.push(chunk);
-              }
-            }
-            index = end;
-          }
-          return result?.join("") ?? "";
-        },
-      };
-
-      resolve(reader);
-    });
-  });
-}
-
-/**
  * From
  * https://github.com/microsoft/TypeScript/blob/b58ac4abf2d58d6309274c22762e2196789476d9/src/compiler/parser.ts#L10664C1-L10672C1
  * 
@@ -394,6 +309,8 @@ function consumeMultiLineCommentChars(reader) {
 
 /**
  * https://tc39.es/ecma262/#prod-HashbangComment
+ * 
+ * Assumes the first hash (#) character was already consumed.
  *
  * ```
  * HashbangComment ::
@@ -414,6 +331,8 @@ function consumeHashBang(reader, comments) {
 /**
  * https://tc39.es/ecma262/#prod-SingleLineComment
  *
+ * Assumes the first and second slash characters were already consumed.
+ *
  * ```
  * SingleLineComment ::
  *     </> </> SingleLineCommentChars[opt]
@@ -429,6 +348,8 @@ function consumeSingleLineComment(reader, comments) {
 
 /**
  * https://tc39.es/ecma262/#prod-MultiLineComment
+ *
+ * Assumes the slash and asterisk characters were already consumed.
  * 
  * ```
  * MultiLineComment ::
@@ -445,6 +366,8 @@ function consumeMultiLineComment(reader, comments) {
 
 /**
  * https://tc39.es/ecma262/#prod-Comment
+ *
+ * Assumes the first slash character was already consumed.
  *
  * ```
  * Comment ::
@@ -487,15 +410,18 @@ function consumeEcmaScriptProgramHeader(reader) {
   loop: while (char = reader.next(), char !== -1) {
     hasBom &&= reader.pos === 1 && char === 0xFEFF;
     switch (EcmaScriptTokenTypes[char]) {
+      // Ignore whitespace and line breaks
       case "line":
       case "ws":
         break;
+      // Hash bang (#!) at the beginning of the file, e.g. #!/usr/bin/env node
       case "hash":
         if (!(reader.pos === 1 || hasBom && reader.pos === 2)) {
           throw new Error("Hash bang (#!) must appear at the beginning of the file.");
         }
         consumeHashBang(reader, comments);
         break;
+      // Slash starts a comment, either single-line or multi-line
       case "slash":
         consumeComment(reader, comments);
         break;
@@ -581,21 +507,4 @@ function getAllCommentPragmas(reader) {
  */
 export function getAllCommentPragmasFromText(code) {
   return getAllCommentPragmas(createTextCharCodeReader(code));
-}
-
-/**
- * Finds all comment pragmas in the given TypeScript / JavaScript code,
- * and returns them. Includes details about their source code location.
- * @implNote For now, only `TripleSlashXML` pragmas are returned,
- * as we only need those for now.
- * @param {string} filePath Path to a TypeScript / JavaScript file.
- * @returns {Promise<TypeScriptCommentPragma[]>}
- */
-export async function getAllCommentPragmasFromFile(filePath) {
-  const reader = await createFileCharCodeReader(filePath);
-  try {
-    return getAllCommentPragmas(reader);
-  } finally {
-    reader[Symbol.dispose]();
-  }
 }
